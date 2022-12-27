@@ -1,0 +1,7 @@
+vocoder:
+  datamodule:
+    data_dir: "/test/dir"
+    sample_rate: 22_050
+diffusion:
+  datamodule:
+    data_dir: "/test/dir"
