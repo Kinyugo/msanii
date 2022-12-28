@@ -1,37 +1,40 @@
-from typing import Any, Optional, Union
+from typing import Any, Dict, Optional, Union
 
 import torch
-from diffusers import DDIMScheduler, DiffusionPipeline, DPMSolverMultistepScheduler
+from diffusers import DDIMScheduler, DPMSolverMultistepScheduler
 from einops import repeat
-from torch import Tensor
+from torch import Tensor, nn
 from torch.nn import functional as F
+from typing_extensions import Self
 
+from ..config import TrainingConfig, from_config
 from ..diffusion import Inpainter, Interpolater, Outpainter, Sampler
 from ..diffusion.utils import noise_like
 from ..models import UNet, Vocoder
 from ..transforms import Transforms
 
 
-class Pipeline(DiffusionPipeline):
+class Pipeline(nn.Module):
     def __init__(
         self,
         transforms: Transforms,
-        unet: UNet,
         vocoder: Vocoder,
+        unet: UNet,
         scheduler: Union[DDIMScheduler, DPMSolverMultistepScheduler],
     ) -> None:
         super().__init__()
 
-        self.register_modules(
-            unet=unet, transforms=transforms, vocoder=vocoder, scheduler=scheduler
-        )
+        self.transforms = transforms
+        self.vocoder = vocoder
+        self.unet = unet
+        self.scheduler = scheduler
 
     @property
     def device(self) -> torch.device:
         next(self.unet.parameters()).device
 
     @torch.no_grad()
-    def __call__(self, *args: Any, **kwds: Any) -> Any:
+    def forward(self, *args: Any, **kwds: Any) -> Any:
         raise NotImplementedError
 
     @torch.no_grad()
@@ -179,6 +182,39 @@ class Pipeline(DiffusionPipeline):
         x = self.__vocode(x, use_neural_vocoder, None)
 
         return x[..., :num_frames]
+
+    @torch.no_grad()
+    def save_pretrained(self, ckpt_path: str, config: TrainingConfig) -> None:
+        checkpoint = {
+            "config": config,
+            "transforms": self.transforms.state_dict(),
+            "vocoder": self.vocoder.state_dict(),
+            "unet": self.unet.state_dict(),
+        }
+        torch.save(checkpoint, ckpt_path)
+
+    @classmethod
+    def from_pretrained(
+        cls,
+        ckpt_path: str,
+        device: Optional[torch.device] = None,
+    ) -> Self:
+        checkpoint = torch.load(ckpt_path)
+
+        config = checkpoint["config"]
+        # Initialize & load state
+        transforms = from_config(config.vocoder.transforms, Transforms).load_state_dict(
+            checkpoint["transforms"]
+        )
+        vocoder = from_config(config.vocoder.vocoder, Vocoder).load_state_dict(
+            checkpoint["vocoder"]
+        )
+        unet = from_config(config.diffusion.unet, UNet).load_state_dict(
+            checkpoint["unet"]
+        )
+        scheduler = from_config(config.diffusion.scheduler)
+
+        return cls(transforms, vocoder, unet, scheduler).to(device)
 
     def __vocode(
         self,

@@ -61,6 +61,6 @@ class SpectrogramLoss(nn.Module):
         lm_loss = self.w_lm_loss * self.lm_loss(input_specgram, target_specgram)
 
         total_loss = sc_loss + lm_loss
-        losses = SpectrogramLossDict(sc_loss, lm_loss)
+        losses = SpectrogramLossDict(sc_loss=sc_loss, lm_loss=lm_loss)
 
         return total_loss, losses

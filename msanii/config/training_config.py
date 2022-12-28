@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Tuple, Type, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 from omegaconf import MISSING
 
@@ -63,7 +63,7 @@ class UNetConfig:
 
 @dataclass
 class SchedulerConfig:
-    _target_: str = "diffusers.DPMSolverMultistepScheduler"
+    _target_: str = "diffusers.DDIMScheduler"
     num_train_timesteps: int = 1000
     beta_schedule: str = "squaredcos_cap_v2"
     _kwargs_: Dict[str, Any] = field(default_factory=lambda: {})
@@ -100,12 +100,36 @@ class LitDiffusionConfig:
 
 
 @dataclass
+class WandbLoggerConfig:
+    _target_: str = "lightning.pytorch.loggers.WandbLogger"
+    save_dir: str = "logs"
+    project: str = "msanii"
+    name: Optional[str] = None
+    job_type: Optional[str] = "train"
+    log_model: Union[str, bool] = True
+    tags: Optional[List[str]] = None
+    notes: Optional[str] = None
+    save_code: Optional[bool] = True
+    offline: bool = False
+    _kwargs_: Dict[str, Any] = field(default_factory=lambda: {})
+
+
+@dataclass
+class ModelCheckpointConfig:
+    _target_: str = "lightning.pytorch.callbacks.ModelCheckpoint"
+    dirpath: Optional[str] = None
+    save_last: Optional[bool] = True
+    verbose: bool = False
+    mode: str = "min"
+    _kwargs_: Dict[str, Any] = field(default_factory=lambda: {})
+
+
+@dataclass
 class TrainerConfig:
     _target_: str = "lightning.Trainer"
     accelerator: Optional[str] = "auto"
     accumulate_grad_batches: int = 1
     devices: Optional[Union[int, str]] = None
-    ckpt_path: Optional[str] = None
     default_root_dir: Optional[str] = None
     detect_anomaly: bool = False
     gradient_clip_val: float = 1.0
@@ -116,6 +140,7 @@ class TrainerConfig:
     max_epochs: Optional[int] = 6
     max_steps: int = -1
     weights_save_path: Optional[str] = None
+    fast_dev_run: bool = False
     _kwargs_: Dict[str, Any] = field(default_factory=lambda: {})
 
 
@@ -125,21 +150,30 @@ class VocoderTrainingConfig:
     transforms: TransformsConfig = field(default_factory=TransformsConfig)
     vocoder: VocoderConfig = field(default_factory=VocoderConfig)
     lit_vocoder: LitVocoderConfig = field(default_factory=LitVocoderConfig)
+    wandb_logger: WandbLoggerConfig = field(default_factory=WandbLoggerConfig)
+    model_checkpoint: ModelCheckpointConfig = field(
+        default_factory=ModelCheckpointConfig
+    )
     trainer: TrainerConfig = field(default_factory=TrainerConfig)
 
     skip_training: bool = False
+    resume_ckpt_path: Optional[str] = None
 
 
 @dataclass
 class DiffusionTrainingConfig:
     datamodule: AudioDataModuleConfig = field(default_factory=AudioDataModuleConfig)
-    transforms: TransformsConfig = field(default_factory=TransformsConfig)
     unet: UNetConfig = field(default_factory=UNetConfig)
     scheduler: SchedulerConfig = field(default_factory=SchedulerConfig)
     lit_diffusion: LitDiffusionConfig = field(default_factory=LitDiffusionConfig)
+    wandb_logger: WandbLoggerConfig = field(default_factory=WandbLoggerConfig)
+    model_checkpoint: ModelCheckpointConfig = field(
+        default_factory=ModelCheckpointConfig
+    )
     trainer: TrainerConfig = field(default_factory=TrainerConfig)
 
     skip_training: bool = False
+    resume_ckpt_path: Optional[str] = None
 
 
 @dataclass
@@ -148,5 +182,5 @@ class TrainingConfig:
     diffusion: DiffusionTrainingConfig = field(default_factory=DiffusionTrainingConfig)
 
     seed: int = 0
-    ckpt_dir: str = "checkpoints"
-    ckpt_name: str = "msanii"
+    pipeline_wandb_name: str = "msanii_pipeline"
+    pipeline_ckpt_path: str = "checkpoints/msanii.pt"

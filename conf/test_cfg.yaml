@@ -1,7 +1,29 @@
 vocoder:
   datamodule:
-    data_dir: "/test/dir"
-    sample_rate: 22_050
+    data_dir: /home/kinyugo-maina/Learning/Data/EDM/
+    num_frames: 523_264
+    batch_size: 2
+  wandb_logger:
+    log_model: false
+    offline: true
+    tags:
+      - vocoder
+  trainer:
+    max_epochs: 1
+    limit_train_batches: 5
+    log_every_n_steps: 2
+
 diffusion:
   datamodule:
-    data_dir: "/test/dir"
+    data_dir: /home/kinyugo-maina/Learning/Data/EDM/
+    num_frames: 523_264
+    batch_size: 2
+  wandb_logger:
+    log_model: false
+    offline: true
+    tags:
+      - diffusion
+  trainer:
+    max_epochs: 1
+    limit_train_batches: 5
+    log_every_n_steps: 2

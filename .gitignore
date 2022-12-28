@@ -161,3 +161,12 @@ cython_debug/
 
 # VsCode
 .vscode
+
+# Test config
+conf/*test*
+
+# Checkpoints saved during runs
+checkpoints/
+
+# Logs created during runs
+logs/

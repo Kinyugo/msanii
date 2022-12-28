@@ -1,7 +1,8 @@
-import wandb
 from einops import rearrange
 from lightning.pytorch.loggers import WandbLogger
 from torch import Tensor, nn
+
+import wandb
 
 from ..utils import plot_distribution, plot_spectrogram, plot_waveform
 
@@ -9,10 +10,10 @@ from ..utils import plot_distribution, plot_spectrogram, plot_waveform
 def log_waveform(
     logger: WandbLogger, waveform: Tensor, sample_rate: int, id: str, caption: str = ""
 ) -> None:
-    logger.log(
+    logger.experiment.log(
         {
             f"{id}_{idx}": plot_waveform(waveform[idx], sample_rate, caption)
-            for idx in waveform.shape[0]
+            for idx in range(waveform.shape[0])
         }
     )
 
@@ -20,10 +21,10 @@ def log_waveform(
 def log_spectrogram(
     logger: WandbLogger, spectrogram: Tensor, id: str, caption: str = ""
 ) -> None:
-    logger.log(
+    logger.experiment.log(
         {
             f"{id}_{idx}": plot_spectrogram(spectrogram[idx], caption)
-            for idx in spectrogram.shape[0]
+            for idx in range(spectrogram.shape[0])
         }
     )
 
@@ -31,8 +32,8 @@ def log_spectrogram(
 def log_distribution(
     logger: WandbLogger, x: Tensor, id: str, caption: str = ""
 ) -> None:
-    logger.log(
-        {f"{id}_{idx}": plot_distribution(x[idx], caption) for idx in x.shape[0]}
+    logger.experiment.log(
+        {f"{id}_{idx}": plot_distribution(x[idx], caption) for idx in range(x.shape[0])}
     )
 
 
@@ -40,10 +41,10 @@ def log_audio(
     logger: WandbLogger, audio: Tensor, sample_rate: int, id: str, caption: str = ""
 ) -> None:
     audio = rearrange(audio, "b c t -> b t c").detach().cpu().numpy()
-    logger.log(
+    logger.experiment.log(
         {
             f"{id}_{idx}": wandb.Audio(audio[idx], sample_rate, caption)
-            for idx in audio.shape[0]
+            for idx in range(audio.shape[0])
         }
     )
 
