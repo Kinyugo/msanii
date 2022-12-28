@@ -201,18 +201,17 @@ class Pipeline(nn.Module):
     ) -> Self:
         checkpoint = torch.load(ckpt_path)
 
+        # Initialize models
         config = checkpoint["config"]
-        # Initialize & load state
-        transforms = from_config(config.vocoder.transforms, Transforms).load_state_dict(
-            checkpoint["transforms"]
-        )
-        vocoder = from_config(config.vocoder.vocoder, Vocoder).load_state_dict(
-            checkpoint["vocoder"]
-        )
-        unet = from_config(config.diffusion.unet, UNet).load_state_dict(
-            checkpoint["unet"]
-        )
+        transforms = from_config(config.vocoder.transforms, Transforms)
+        vocoder = from_config(config.vocoder.vocoder, Vocoder)
+        unet = from_config(config.diffusion.unet, UNet)
         scheduler = from_config(config.diffusion.scheduler)
+
+        # Load model state
+        transforms.load_state_dict(checkpoint["transforms"])
+        vocoder.load_state_dict(checkpoint["vocoder"])
+        unet.load_state_dict(checkpoint["unet"])
 
         return cls(transforms, vocoder, unet, scheduler).to(device)
 
