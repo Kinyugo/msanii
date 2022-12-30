@@ -1,10 +1,14 @@
 import torch
+from diffusers.configuration_utils import ConfigMixin, register_to_config
 from torch import Tensor, nn
 
 from ..modules import InputFn, OutputFn, ResidualBlock
 
 
-class Vocoder(nn.Module):
+class Vocoder(ConfigMixin, nn.Module):
+    config_name = "vocoder_config.json"
+
+    @register_to_config
     def __init__(
         self,
         n_fft: int = 2048,

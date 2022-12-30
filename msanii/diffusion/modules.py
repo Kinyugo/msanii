@@ -1,4 +1,5 @@
-from typing import Any, Optional, Union
+import math
+from typing import Any, Optional, Tuple, Union
 
 import torch
 from diffusers import DDIMScheduler, DPMSolverMultistepScheduler, RePaintScheduler
@@ -25,36 +26,47 @@ class DiffusionModule(nn.Module):
     def device(self) -> torch.device:
         next(self.eps_model.parameters()).device
 
+    def compute_timesteps(
+        self, num_inference_steps: int, strength: float, device: torch.device
+    ) -> Tuple[Tensor, int]:
+        # Ensure number of inference steps is not more than start timestep
+        t_start = ((strength * self.scheduler.num_train_timesteps) - 1) + 1e-5
+        num_inference_steps = min(num_inference_steps, t_start + 1)
+
+        # Compute inference steps for the whole noising schedule
+        total_inference_steps = math.ceil(
+            (self.scheduler.num_train_timesteps * num_inference_steps) / (t_start + 1)
+        )
+        step = int(t_start + 1) // num_inference_steps
+        timesteps = (
+            torch.arange(start=0, end=int(t_start + 1), step=step, device=device)
+            .int()
+            .flipud()
+        )
+
+        return timesteps, total_inference_steps
+
 
 class Sampler(DiffusionModule):
     def forward(
         self,
         x: Tensor,
         num_inference_steps: Optional[int] = None,
-        timestep: Optional[int] = None,
+        strength: float = 1.0,
         generator: Optional[torch.Generator] = None,
         verbose: bool = False,
         **kwargs: Any
     ) -> Tensor:
-        # Start sampling from the last diffusion timestep
-        if timestep is None:
-            timestep = self.scheduler.num_train_timesteps - 1
-        # Iterate over all timesteps from the starting timestep
-        if num_inference_steps is None:
-            num_inference_steps = timestep + 1
-        # Make sure we don't sample out of range values
-        num_inference_steps = min(num_inference_steps, timestep + 1)
-
-        # Adjust timesteps to match the number of sampling steps and starting timestep
-        step = (timestep + 1) // num_inference_steps
-        timesteps = torch.arange(
-            start=0, end=timestep + 1, step=step, device=self.device
-        ).flipud()
+        # Set number of timesteps for denoising
+        timesteps, total_inference_steps = self.compute_timesteps(
+            num_inference_steps, strength, x.device
+        )
+        self.scheduler.set_timesteps(total_inference_steps, x.device)
 
         for t in tqdm(timesteps, disable=(not verbose)):
             # Prepare a batch of timesteps
             batch_t = torch.full(
-                (x.shape[0],), timestep, dtype=torch.long, device=x.device
+                (x.shape[0],), t.item(), dtype=torch.long, device=x.device
             )
             # Get model estimate
             eps = self.eps_model(x, batch_t)
@@ -85,27 +97,24 @@ class Interpolater(DiffusionModule):
         x2: Tensor,
         ratio: float = 0.5,
         num_inference_steps: Optional[int] = None,
-        timestep: Optional[int] = None,
+        strength: float = 1.0,
         generator: Optional[torch.Generator] = None,
         verbose: bool = False,
         **kwargs: Any
     ) -> Tensor:
-        # Start interpolation from complete noise
-        if timestep is None:
-            timestep = self.scheduler.num_train_timesteps - 1
-
-        # Prepare a batch of timesteps
-        timesteps = torch.full(
-            (x1.shape[0],), timestep, dtype=torch.long, device=x1.device
-        )
+        # Get timestep schedule for the denoising process
+        timesteps, _ = self.compute_timesteps(num_inference_steps, strength, x1.device)
 
         # Add noise up to the starting timestep
-        x1_noisy = self.scheduler.add_noise(x1, noise_like(x1, generator), timesteps)
-        x2_noisy = self.scheduler.add_noise(x2, noise_like(x2, generator), timesteps)
+        batch_t = torch.full(
+            (x1.shape[0],), timesteps[0], dtype=torch.long, device=x1.device
+        )
+        x1_noisy = self.scheduler.add_noise(x1, noise_like(x1, generator), batch_t)
+        x2_noisy = self.scheduler.add_noise(x2, noise_like(x2, generator), batch_t)
 
         # Interpolate between the two samples in latent/noisy space
         x = ratio * x1_noisy + (1 - ratio) * x2_noisy
-        x = self.sampler(x, num_inference_steps, timestep, generator, verbose, **kwargs)
+        x = self.sampler(x, num_inference_steps, strength, generator, verbose, **kwargs)
 
         return x
 
@@ -138,7 +147,7 @@ class Inpainter(DiffusionModule):
 
         # Adjust scheduler inference steps
         self.repaint_scheduler.set_timesteps(
-            num_inference_steps, jump_length, jump_n_sample, self.device
+            num_inference_steps, jump_length, jump_n_sample, x.device
         )
         self.repaint_scheduler.eta = eta
 
@@ -153,7 +162,7 @@ class Inpainter(DiffusionModule):
                     (x.shape[0],), t, dtype=torch.long, device=x.device
                 )
                 # Get model estimate
-                eps = self.eps_model(x, batch_t)
+                eps = self.eps_model(x_inpainted, batch_t)
                 # Compute the denoised sample
                 x_inpainted = self.repaint_scheduler.step(
                     eps, t, x_inpainted, x, mask, generator, **kwargs

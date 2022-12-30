@@ -1,6 +1,7 @@
 from typing import Any, Dict, Optional, Tuple
 
 import torch
+from diffusers.configuration_utils import ConfigMixin, register_to_config
 from torch import Tensor, nn
 from torchaudio import transforms as T
 
@@ -9,7 +10,10 @@ from .griffin_lim import GriffinLim
 from .inverse_mel_scale import InverseMelScale
 
 
-class Transforms(nn.Module):
+class Transforms(ConfigMixin, nn.Module):
+    config_name = "transforms_config.json"
+
+    @register_to_config
     def __init__(
         self,
         sample_rate: int = 44_100,

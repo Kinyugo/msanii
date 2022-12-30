@@ -164,7 +164,7 @@ def run_training(config: TrainingConfig) -> None:
     # Save Pipeline Checkpoint
     # -------------------------------------------
     pipeline = Pipeline(transforms, vocoder, unet, scheduler)
-    pipeline.save_pretrained(config.pipeline_ckpt_path, config)
+    pipeline.save_pretrained(config.pipeline_ckpt_path)
 
     # -------------------------------------------
     # Log checkpoint to Wandb

@@ -11,11 +11,11 @@ def from_config(
 
     # Add target import path if given
     if target is not None:
-        target_path = f"{target.__module__}.{target.__name__}"
+        target_path = get_import_path_from_instance(target)
         config.update({"_target_": target_path})
 
     # Get parameters of the target
-    target = import_from_string(config.get("_target_"))
+    target = import_from_path(config.get("_target_"))
     target_signature = signature(target)
     target_params = [param for param in target_signature.parameters]
 
@@ -32,7 +32,11 @@ def from_config(
     return target(**merged_config)
 
 
-def import_from_string(import_path: str) -> Callable:
+def get_import_path_from_instance(instance: Any) -> str:
+    return f"{instance.__module__}.{instance.__name__}"
+
+
+def import_from_path(import_path: str) -> Callable:
     module_name, obj_name = import_path.rsplit(".", maxsplit=1)
     module = importlib.import_module(module_name)
 

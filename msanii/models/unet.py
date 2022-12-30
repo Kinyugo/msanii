@@ -2,6 +2,7 @@ from typing import List, Tuple
 
 import numpy as np
 import torch
+from diffusers.configuration_utils import ConfigMixin, register_to_config
 from torch import Tensor, nn
 
 from ..modules import (
@@ -15,7 +16,10 @@ from ..modules import (
 )
 
 
-class UNet(nn.Module):
+class UNet(ConfigMixin, nn.Module):
+    config_name = "unet_config.json"
+
+    @register_to_config
     def __init__(
         self,
         d_freq: int = 128,

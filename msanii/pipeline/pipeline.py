@@ -1,4 +1,4 @@
-from typing import Any, Optional, Union
+from typing import Any, Callable, Optional, Union
 
 import torch
 from diffusers import DDIMScheduler, DPMSolverMultistepScheduler
@@ -7,7 +7,7 @@ from torch import Tensor, nn
 from torch.nn import functional as F
 from typing_extensions import Self
 
-from ..config import TrainingConfig, from_config
+from ..config import from_config
 from ..diffusion import Inpainter, Interpolater, Outpainter, Sampler
 from ..diffusion.utils import noise_like
 from ..models import UNet, Vocoder
@@ -42,7 +42,7 @@ class Pipeline(nn.Module):
         self,
         x: Tensor,
         num_inference_steps: Optional[int] = None,
-        timestep: Optional[int] = None,
+        strength: float = 1.0,
         generator: Optional[torch.Generator] = None,
         verbose: bool = False,
         use_input_as_seed: bool = False,
@@ -57,23 +57,23 @@ class Pipeline(nn.Module):
         # Start from an initial sample
         if use_input_as_seed:
             # Add noise to the initial sample up to the last timestep
-            if timestep is None:
-                timestep = sampler.scheduler.num_train_timesteps - 1
+            timesteps, _ = sampler.compute_timesteps(
+                num_inference_steps, strength, x.device
+            )
 
             # Convert waveform to mel and add noise to the starting timestep
             batch_t = torch.full(
-                (x.shape[0],), timestep, dtype=torch.long, device=self.device
+                (x.shape[0],), timesteps[0], dtype=torch.long, device=self.device
             )
-            x = sampler.scheduler.add_noise(
-                self.transforms(x), noise_like(x, generator), batch_t
-            )
+            x = self.transforms(x)
+            x = sampler.scheduler.add_noise(x, noise_like(x, generator), batch_t)
 
         # Start from random noise
         else:
-            x = torch.randn_like(self.transforms(x))
+            x = noise_like(self.transforms(x), generator)
 
         # Denoise the samples
-        x = sampler(x, num_inference_steps, timestep, generator, verbose, **kwargs)
+        x = sampler(x, num_inference_steps, strength, generator, verbose, **kwargs)
 
         return self.__vocode(x, use_neural_vocoder, num_frames)
 
@@ -84,7 +84,7 @@ class Pipeline(nn.Module):
         x2: Tensor,
         ratio: float = 0.5,
         num_inference_steps: Optional[int] = None,
-        timestep: Optional[int] = None,
+        strength: float = 1.0,
         generator: Optional[torch.Generator] = None,
         verbose: bool = False,
         use_neural_vocoder: bool = True,
@@ -100,7 +100,7 @@ class Pipeline(nn.Module):
 
         # Interpolate in the melspace
         x = interpolater(
-            x1, x2, ratio, num_inference_steps, timestep, generator, verbose, **kwargs
+            x1, x2, ratio, num_inference_steps, strength, generator, verbose, **kwargs
         )
 
         return self.__vocode(x, use_neural_vocoder, num_frames)
@@ -184,12 +184,15 @@ class Pipeline(nn.Module):
         return x[..., :num_frames]
 
     @torch.no_grad()
-    def save_pretrained(self, ckpt_path: str, config: TrainingConfig) -> None:
+    def save_pretrained(self, ckpt_path: str) -> None:
         checkpoint = {
-            "config": config,
-            "transforms": self.transforms.state_dict(),
-            "vocoder": self.vocoder.state_dict(),
-            "unet": self.unet.state_dict(),
+            "transforms_config": self.transforms.config,
+            "vocoder_config": self.vocoder.config,
+            "unet_config": self.unet.config,
+            "scheduler_config": self.scheduler.config,
+            "transforms_state_dict": self.transforms.state_dict(),
+            "vocoder_state_dict": self.vocoder.state_dict(),
+            "unet_state_dict": self.unet.state_dict(),
         }
         torch.save(checkpoint, ckpt_path)
 
@@ -197,21 +200,19 @@ class Pipeline(nn.Module):
     def from_pretrained(
         cls,
         ckpt_path: str,
+        scheduler_class: Union[
+            DDIMScheduler, DPMSolverMultistepScheduler
+        ] = DDIMScheduler,
         device: Optional[torch.device] = None,
     ) -> Self:
         checkpoint = torch.load(ckpt_path)
 
-        # Initialize models
-        config = checkpoint["config"]
-        transforms = from_config(config.vocoder.transforms, Transforms)
-        vocoder = from_config(config.vocoder.vocoder, Vocoder)
-        unet = from_config(config.diffusion.unet, UNet)
-        scheduler = from_config(config.diffusion.scheduler)
-
-        # Load model state
-        transforms.load_state_dict(checkpoint["transforms"])
-        vocoder.load_state_dict(checkpoint["vocoder"])
-        unet.load_state_dict(checkpoint["unet"])
+        transforms = Pipeline._load_from_checkpoint(
+            checkpoint, "transforms", Transforms
+        )
+        vocoder = Pipeline._load_from_checkpoint(checkpoint, "vocoder", Vocoder)
+        unet = Pipeline._load_from_checkpoint(checkpoint, "unet", UNet)
+        scheduler = from_config(checkpoint["scheduler_config"], scheduler_class)
 
         return cls(transforms, vocoder, unet, scheduler).to(device)
 
@@ -224,6 +225,13 @@ class Pipeline(nn.Module):
         if use_neural_vocoder:
             return self.transforms.griffin_lim(self.vocoder(x), length=num_frames)
         return self.transforms(x, inverse=True, length=num_frames)
+
+    @staticmethod
+    def _load_from_checkpoint(checkpoint, prefix: str, target: Callable) -> Any:
+        target_instance = from_config(checkpoint[f"{prefix}_config"], target)
+        target_instance.load_state_dict(checkpoint[f"{prefix}_state_dict"])
+
+        return target_instance
 
 
 if __name__ == "__main__":
