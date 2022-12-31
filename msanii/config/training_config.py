@@ -29,7 +29,7 @@ class TransformsConfig:
     momentum: float = 1e-3
     eps: float = 1e-5
     clip: bool = True
-    num_griffin_lim_iters: int = 50
+    num_griffin_lim_iters: int = 100
     griffin_lim_momentum: float = 0.99
 
 

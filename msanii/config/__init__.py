@@ -1,3 +1,4 @@
+from .demo_config import DemoConfig
 from .training_config import (
     DiffusionTrainingConfig,
     TrainingConfig,

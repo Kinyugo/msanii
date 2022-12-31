@@ -41,6 +41,7 @@ class BaseIterativeVocoder(ABC, nn.Module):
         *,
         init_phase: Optional[Tensor] = None,
         length: Optional[int] = None,
+        num_iters: Optional[int] = None,
         return_phase: bool = False,
     ) -> Union[Tensor, Tuple[Tensor, Tensor]]:
         # Flatten the specgram except the frequency and time dimension
@@ -62,7 +63,9 @@ class BaseIterativeVocoder(ABC, nn.Module):
             phase = phase.reshape(specgram.shape)
 
         # Reconstruct the phase
-        phase = self.reconstruct_phase(specgram, phase=phase, length=length)
+        phase = self.reconstruct_phase(
+            specgram, phase=phase, length=length, num_iters=num_iters
+        )
 
         # Synthesize the waveform using computed phase
         waveform = torch.istft(
@@ -89,6 +92,7 @@ class BaseIterativeVocoder(ABC, nn.Module):
         *,
         phase: Optional[Tensor] = None,
         length: Optional[int] = None,
+        num_iters: Optional[int] = None,
     ) -> Tensor:
         raise NotImplementedError
 
@@ -151,13 +155,17 @@ class GriffinLim(BaseIterativeVocoder):
         *,
         phase: Optional[Tensor] = None,
         length: Optional[int] = None,
+        num_iters: Optional[int] = None,
     ) -> Tensor:
+        if num_iters is None:
+            num_iters = self.num_iters
+
         momentum = self.momentum / (1 + self.momentum)
 
         # Initialize our previous iterate
         prev_stftspec = torch.tensor(0.0, dtype=specgram.dtype, device=specgram.device)
 
-        for _ in range(self.num_iters):
+        for _ in range(num_iters):
             # Invert and rebuild with the current phase estimate
             next_stftspec = self.project_complex_spec(specgram * phase, length)
 

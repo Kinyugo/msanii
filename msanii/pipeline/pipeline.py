@@ -30,8 +30,12 @@ class Pipeline(nn.Module):
         self.scheduler = scheduler
 
     @property
+    def dtype(self) -> torch.dtype:
+        return next(self.unet.parameters()).dtype
+
+    @property
     def device(self) -> torch.device:
-        next(self.unet.parameters()).device
+        return next(self.unet.parameters()).device
 
     @torch.no_grad()
     def forward(self, *args: Any, **kwds: Any) -> Any:
@@ -47,6 +51,7 @@ class Pipeline(nn.Module):
         verbose: bool = False,
         use_input_as_seed: bool = False,
         use_neural_vocoder: bool = True,
+        num_griffin_lim_iters: Optional[int] = None,
         **kwargs: Any,
     ) -> Tensor:
         # Initialize the sampler
@@ -75,7 +80,7 @@ class Pipeline(nn.Module):
         # Denoise the samples
         x = sampler(x, num_inference_steps, strength, generator, verbose, **kwargs)
 
-        return self.__vocode(x, use_neural_vocoder, num_frames)
+        return self.__vocode(x, use_neural_vocoder, num_frames, num_griffin_lim_iters)
 
     @torch.no_grad()
     def interpolate(
@@ -88,6 +93,7 @@ class Pipeline(nn.Module):
         generator: Optional[torch.Generator] = None,
         verbose: bool = False,
         use_neural_vocoder: bool = True,
+        num_griffin_lim_iters: Optional[int] = None,
         **kwargs: Any,
     ) -> Tensor:
         # Initialize the interpolater
@@ -103,7 +109,7 @@ class Pipeline(nn.Module):
             x1, x2, ratio, num_inference_steps, strength, generator, verbose, **kwargs
         )
 
-        return self.__vocode(x, use_neural_vocoder, num_frames)
+        return self.__vocode(x, use_neural_vocoder, num_frames, num_griffin_lim_iters)
 
     @torch.no_grad()
     def inpaint(
@@ -117,6 +123,7 @@ class Pipeline(nn.Module):
         generator: Optional[torch.Generator] = None,
         verbose: bool = False,
         use_neural_vocoder: bool = True,
+        num_griffin_lim_iters: Optional[int] = None,
         **kwargs: Any,
     ) -> Tensor:
         # Initialize the inpainter
@@ -142,7 +149,7 @@ class Pipeline(nn.Module):
             **kwargs,
         )
 
-        return self.__vocode(x, use_neural_vocoder, num_frames)
+        return self.__vocode(x, use_neural_vocoder, num_frames, num_griffin_lim_iters)
 
     @torch.no_grad()
     def outpaint(
@@ -156,6 +163,7 @@ class Pipeline(nn.Module):
         generator: Optional[torch.Generator] = None,
         verbose: bool = False,
         use_neural_vocoder: bool = True,
+        num_griffin_lim_iters: Optional[int] = None,
         **kwargs: Any,
     ) -> Tensor:
         # Initialize the inpainter
@@ -179,7 +187,7 @@ class Pipeline(nn.Module):
 
         # Compute the new number of frames
         num_frames = num_frames + ((num_frames // 2) * num_spans)
-        x = self.__vocode(x, use_neural_vocoder, None)
+        x = self.__vocode(x, use_neural_vocoder, None, num_griffin_lim_iters)
 
         return x[..., :num_frames]
 
@@ -221,10 +229,19 @@ class Pipeline(nn.Module):
         x: Tensor,
         use_neural_vocoder: bool = True,
         num_frames: Optional[int] = None,
+        num_griffin_lim_iters: Optional[int] = None,
     ) -> Tensor:
         if use_neural_vocoder:
-            return self.transforms.griffin_lim(self.vocoder(x), length=num_frames)
-        return self.transforms(x, inverse=True, length=num_frames)
+            return self.transforms.griffin_lim(
+                self.vocoder(x), length=num_frames, num_iters=num_griffin_lim_iters
+            )
+
+        return self.transforms(
+            x,
+            inverse=True,
+            length=num_frames,
+            num_griffin_lim_iters=num_griffin_lim_iters,
+        )
 
     @staticmethod
     def _load_from_checkpoint(checkpoint, prefix: str, target: Callable) -> Any:

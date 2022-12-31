@@ -25,7 +25,7 @@ class Transforms(ConfigMixin, nn.Module):
         momentum: float = 1e-3,
         eps: float = 1e-5,
         clip: bool = True,
-        num_griffin_lim_iters: int = 50,
+        num_griffin_lim_iters: int = 100,
         griffin_lim_momentum: float = 0.99,
     ) -> None:
         super().__init__()
@@ -76,10 +76,14 @@ class Transforms(ConfigMixin, nn.Module):
         }
 
     def forward(
-        self, x: Tensor, inverse: bool = False, length: Optional[int] = None
+        self,
+        x: Tensor,
+        inverse: bool = False,
+        length: Optional[int] = None,
+        num_griffin_lim_iters: Optional[int] = None,
     ) -> Tensor:
         if inverse:
-            return self.inverse_transform(x, length)
+            return self.inverse_transform(x, length, num_griffin_lim_iters)
         return self.transform(x)
 
     def transform(self, x: Tensor) -> Tensor:
@@ -91,12 +95,19 @@ class Transforms(ConfigMixin, nn.Module):
 
         return x_transformed
 
-    def inverse_transform(self, x: Tensor, length: Optional[int] = None) -> Tensor:
+    def inverse_transform(
+        self,
+        x: Tensor,
+        length: Optional[int] = None,
+        num_griffin_lim_iters: Optional[int] = None,
+    ) -> Tensor:
         x_transformed = self.minmax_scaler(x, inverse=True)
         x_transformed = self.standard_scaler(x_transformed, inverse=True)
         x_transformed = torch.exp(x_transformed)
         x_transformed = self.inverse_mel_scale(x_transformed)
-        x_transformed = self.griffin_lim(x_transformed, length=length)
+        x_transformed = self.griffin_lim(
+            x_transformed, length=length, num_iters=num_griffin_lim_iters
+        )
 
         return x_transformed
 

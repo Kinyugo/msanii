@@ -71,12 +71,12 @@ class Sampler(DiffusionModule):
             # Get model estimate
             eps = self.eps_model(x, batch_t)
             # Compute the denoised sample
-            if isinstance(self.scheduler, DPMSolverMultistepScheduler):
-                x = self.scheduler.step(eps, t, x, **kwargs).prev_sample
-            else:
+            if isinstance(self.scheduler, DDIMScheduler):
                 x = self.scheduler.step(
                     eps, t, x, generator=generator, **kwargs
                 ).prev_sample
+            else:
+                x = self.scheduler.step(eps, t, x, **kwargs).prev_sample
 
         return x
 
