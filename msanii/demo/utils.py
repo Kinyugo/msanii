@@ -79,3 +79,24 @@ def gradio_audio_postprocessing(audio: Tensor, target_length: int) -> np.ndarray
     audio = rearrange(audio, "b c l -> (l b) c")
 
     return audio.detach().cpu().numpy()
+
+
+def generate_gradio_audio_mask(
+    audio: np.ndarray, sample_rate: int, spec: str
+) -> np.ndarray:
+    # Convert mask string to a list of tuples of time intevals
+    mask_intervals = []
+    for mask in spec.split(","):
+        start, end = map(int, mask.split("-"))
+        mask_intervals.append((start, end))
+
+    # Create a numpy array of zeros with the same shape as input
+    mask = np.ones_like(audio)
+
+    # Set the values at the specified time intervals to 1
+    for start, end in mask_intervals:
+        start_sample = int(start * sample_rate)
+        end_sample = int(end * sample_rate)
+        mask[start_sample:end_sample, ...] = 0
+
+    return mask

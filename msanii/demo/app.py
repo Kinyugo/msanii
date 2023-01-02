@@ -8,7 +8,13 @@ from omegaconf import OmegaConf
 
 from ..config import DemoConfig
 from ..pipeline import Pipeline
-from .helpers import run_audio2audio, run_interpolation, run_sampling
+from .helpers import (
+    run_audio2audio,
+    run_inpainting,
+    run_interpolation,
+    run_outpainting,
+    run_sampling,
+)
 
 
 def run_demo(config: DemoConfig) -> None:
@@ -59,8 +65,19 @@ def run_demo(config: DemoConfig) -> None:
                     interpolation_button = gr.Button(value="Run", variant="primary")
 
                 with gr.Tab("Inpainting"):
+                    inpainting_audio_input = gr.Audio(label="Source Audio")
+                    inpainting_mask_input = gr.Text(
+                        label="Mask Intervals (seconds) e.g: 20-30,50-60"
+                    )
+                    inpainting_spectrogram_output = gr.Plot(label="Spectrogram")
+                    inpainting_waveform_output = gr.Plot(label="Waveform")
+                    inpainting_audio_output = gr.Audio(label="Sample Audio")
                     inpainting_button = gr.Button(value="Run", variant="primary")
                 with gr.Tab("Outpainting"):
+                    outpainting_audio_input = gr.Audio(label="Source Audio")
+                    outpainting_spectrogram_output = gr.Plot(label="Spectrogram")
+                    outpainting_waveform_output = gr.Plot(label="Waveform")
+                    outpainting_audio_output = gr.Audio(label="Sample Audio")
                     outpainting_button = gr.Button(value="Run", variant="primary")
 
             # Options
@@ -108,6 +125,30 @@ def run_demo(config: DemoConfig) -> None:
                             minimum=0, maximum=1, value=0.1, label="Noise Strength"
                         )
 
+                    with gr.Group():
+                        gr.Markdown("Inpainting & Outpainting")
+                        jump_length_slider = gr.Slider(
+                            minimum=1,
+                            maximum=pipeline.scheduler.num_train_timesteps,
+                            value=10,
+                            label="Number of Forward Steps",
+                        )
+                        jump_n_samples_slider = gr.Slider(
+                            minimum=1,
+                            maximum=pipeline.scheduler.num_train_timesteps,
+                            value=10,
+                            label="Number of Forward Jumps",
+                        )
+
+                    with gr.Group():
+                        gr.Markdown("Outpainting")
+                        num_spans_slider = gr.Slider(
+                            minimum=1,
+                            maximum=100,
+                            step=1,
+                            value=5,
+                            label="Number of Outpaint Spans (1/2 duration)",
+                        )
                 with gr.Accordion(label="Advanced Options", open=False):
                     use_nv_checkbox = gr.Checkbox(
                         value=True, label="Use Neural Vocoder"
@@ -167,6 +208,47 @@ def run_demo(config: DemoConfig) -> None:
                 interpolation_audio_output,
             ],
         )
+
+        inpainting_button.click(
+            lambda *args: run_inpainting(pipeline, *args),
+            inputs=[
+                inpainting_audio_input,
+                inpainting_mask_input,
+                jump_length_slider,
+                jump_n_samples_slider,
+                duration_slider,
+                inference_steps_slider,
+                use_nv_checkbox,
+                griffin_lim_iters_slider,
+                seed,
+                eta_slider,
+            ],
+            outputs=[
+                inpainting_spectrogram_output,
+                inpainting_waveform_output,
+                inpainting_audio_output,
+            ],
+        )
+
+        outpainting_button.click(
+            lambda *args: run_outpainting(pipeline, *args),
+            inputs=[
+                outpainting_audio_input,
+                num_spans_slider,
+                duration_slider,
+                inference_steps_slider,
+                use_nv_checkbox,
+                griffin_lim_iters_slider,
+                seed,
+                eta_slider,
+            ],
+            outputs=[
+                outpainting_spectrogram_output,
+                outpainting_waveform_output,
+                outpainting_audio_output,
+            ],
+        )
+
     demo.launch(debug=True)
 
 
