@@ -84,9 +84,6 @@ def run_demo(config: DemoConfig) -> None:
             with gr.Column(scale=1):
                 with gr.Accordion(label="General Options", open=True):
                     with gr.Group():
-                        duration_slider = gr.Slider(
-                            minimum=10, maximum=190, label="Audio Duration (seconds)"
-                        )
                         inference_steps_slider = gr.Slider(
                             minimum=1,
                             maximum=pipeline.scheduler.num_train_timesteps,
@@ -108,6 +105,9 @@ def run_demo(config: DemoConfig) -> None:
                 with gr.Accordion(label="Task Specific Options", open=False):
                     with gr.Group():
                         gr.Markdown("Sampling Options")
+                        duration_slider = gr.Slider(
+                            minimum=10, maximum=190, label="Audio Duration (seconds)"
+                        )
                         channels_slider = gr.Slider(
                             minimum=1,
                             maximum=2,
@@ -154,6 +154,9 @@ def run_demo(config: DemoConfig) -> None:
                         value=True, label="Use Neural Vocoder"
                     )
                     eta_slider = gr.Slider(minimum=0, maximum=1, label="eta")
+                    max_abs_value_slider = gr.Slider(
+                        minimum=0, maximum=1, value=0.05, label="Maximum Absolute Value"
+                    )
 
         sampling_button.click(
             lambda *args: run_sampling(pipeline, *args),
@@ -177,13 +180,13 @@ def run_demo(config: DemoConfig) -> None:
             lambda *args: run_audio2audio(pipeline, *args),
             inputs=[
                 a2a_audio_input,
-                duration_slider,
                 inference_steps_slider,
                 strength_slider,
                 use_nv_checkbox,
                 griffin_lim_iters_slider,
                 seed,
                 eta_slider,
+                max_abs_value_slider,
             ],
             outputs=[a2a_spectrogram_output, a2a_waveform_output, a2a_audio_output],
         )
@@ -193,7 +196,6 @@ def run_demo(config: DemoConfig) -> None:
             inputs=[
                 interpolation_first_audio_input,
                 interpolation_second_audio_input,
-                duration_slider,
                 inference_steps_slider,
                 ratio_slider,
                 strength_slider,
@@ -201,6 +203,7 @@ def run_demo(config: DemoConfig) -> None:
                 griffin_lim_iters_slider,
                 seed,
                 eta_slider,
+                max_abs_value_slider,
             ],
             outputs=[
                 interpolation_spectrogram_output,
@@ -216,12 +219,12 @@ def run_demo(config: DemoConfig) -> None:
                 inpainting_mask_input,
                 jump_length_slider,
                 jump_n_samples_slider,
-                duration_slider,
                 inference_steps_slider,
                 use_nv_checkbox,
                 griffin_lim_iters_slider,
                 seed,
                 eta_slider,
+                max_abs_value_slider,
             ],
             outputs=[
                 inpainting_spectrogram_output,
@@ -235,12 +238,12 @@ def run_demo(config: DemoConfig) -> None:
             inputs=[
                 outpainting_audio_input,
                 num_spans_slider,
-                duration_slider,
                 inference_steps_slider,
                 use_nv_checkbox,
                 griffin_lim_iters_slider,
                 seed,
                 eta_slider,
+                max_abs_value_slider,
             ],
             outputs=[
                 outpainting_spectrogram_output,

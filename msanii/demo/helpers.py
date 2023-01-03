@@ -15,6 +15,7 @@ from .utils import (
     generate_gradio_audio_mask,
     gradio_audio_postprocessing,
     gradio_audio_preprocessing,
+    max_abs_scaling,
 )
 
 
@@ -59,29 +60,30 @@ def run_sampling(
 def run_audio2audio(
     pipeline: Pipeline,
     audio: Tuple[int, np.ndarray],
-    duration: int,
     num_inference_steps: int,
     strength: float,
     use_neural_vocoder: bool,
     num_griffin_lim_iters: int,
     seed: float,
     eta: float,
+    max_abs_value: float,
 ) -> Tuple[Figure, Figure, Tuple[int, np.ndarray]]:
     # Convert audio to tensor & resample
     sample_rate, audio = audio
 
     # Apply some preprocessing
-    target_length = duration * pipeline.transforms.sample_rate
+    audio_len = audio.shape[0]
     audio = gradio_audio_preprocessing(
         audio,
         src_sample_rate=sample_rate,
         target_sample_rate=pipeline.transforms.sample_rate,
-        target_length=target_length,
+        target_length=audio_len,
         hop_length=pipeline.transforms.hop_length,
         num_downsamples=sum(pipeline.unet.has_resampling),
         dtype=pipeline.dtype,
         device=pipeline.device,
     )
+    audio = max_abs_scaling(audio, max_abs_value)
 
     # Generate sample from pipeline
     generator = torch.Generator(pipeline.device).manual_seed(int(seed))
@@ -99,7 +101,8 @@ def run_audio2audio(
     # Compute waveform and spectrogram representation
     spectrogram = plot_spectrogram(pipeline.transforms(audio))
     waveform = plot_waveform(audio, pipeline.transforms.sample_rate)
-    audio = gradio_audio_postprocessing(audio, target_length)
+    audio = max_abs_scaling(audio, max_abs_value=1.0)
+    audio = gradio_audio_postprocessing(audio, audio_len)
 
     return spectrogram, waveform, (pipeline.transforms.sample_rate, audio)
 
@@ -108,7 +111,6 @@ def run_interpolation(
     pipeline: Pipeline,
     first_audio: Tuple[int, np.ndarray],
     second_audio: Tuple[int, np.ndarray],
-    duration: int,
     num_inference_steps: int,
     ratio: float,
     strength: float,
@@ -116,18 +118,19 @@ def run_interpolation(
     num_griffin_lim_iters: int,
     seed: float,
     eta: float,
+    max_abs_value: float,
 ) -> Tuple[Figure, Figure, Tuple[int, np.ndarray]]:
     # Convert audio to tensor & resample
     first_sample_rate, first_audio = first_audio
     second_sample_rate, second_audio = second_audio
 
     # Apply some preprocessing
-    target_length = duration * pipeline.transforms.sample_rate
+    audio_len = first_audio.shape[0]
     first_audio = gradio_audio_preprocessing(
         first_audio,
         src_sample_rate=first_sample_rate,
         target_sample_rate=pipeline.transforms.sample_rate,
-        target_length=target_length,
+        target_length=audio_len,
         hop_length=pipeline.transforms.hop_length,
         num_downsamples=sum(pipeline.unet.has_resampling),
         dtype=pipeline.dtype,
@@ -137,12 +140,16 @@ def run_interpolation(
         second_audio,
         src_sample_rate=second_sample_rate,
         target_sample_rate=pipeline.transforms.sample_rate,
-        target_length=target_length,
+        target_length=audio_len,
         hop_length=pipeline.transforms.hop_length,
         num_downsamples=sum(pipeline.unet.has_resampling),
         dtype=pipeline.dtype,
         device=pipeline.device,
     )
+
+    # Scale the amplitude to a range close to what the model outputs
+    first_audio = max_abs_scaling(first_audio, max_abs_value)
+    second_audio = max_abs_scaling(second_audio, max_abs_value)
 
     # Generate sample from pipeline
     generator = torch.Generator(pipeline.device).manual_seed(int(seed))
@@ -161,7 +168,8 @@ def run_interpolation(
     # Compute waveform and spectrogram representation
     spectrogram = plot_spectrogram(pipeline.transforms(audio))
     waveform = plot_waveform(audio, pipeline.transforms.sample_rate)
-    audio = gradio_audio_postprocessing(audio, target_length)
+    audio = max_abs_scaling(audio, max_abs_value=1.0)
+    audio = gradio_audio_postprocessing(audio, audio_len)
 
     return spectrogram, waveform, (pipeline.transforms.sample_rate, audio)
 
@@ -172,27 +180,25 @@ def run_inpainting(
     mask_spec: str,
     jump_length: int,
     jump_n_samples: int,
-    duration: int,
     num_inference_steps: int,
     use_neural_vocoder: bool,
     num_griffin_lim_iters: int,
     seed: float,
     eta: float,
+    max_abs_value: float,
 ) -> Tuple[Figure, Figure, Tuple[int, np.ndarray]]:
     sample_rate, audio = audio
 
     # Generate mask from the mask-spec
     audio_mask = generate_gradio_audio_mask(audio, sample_rate, mask_spec)
 
-    print(audio.shape, audio_mask.shape)
-
     # Apply some preprocessing
-    target_length = duration * pipeline.transforms.sample_rate
+    audio_len = audio.shape[0]
     audio = gradio_audio_preprocessing(
         audio,
         src_sample_rate=sample_rate,
         target_sample_rate=pipeline.transforms.sample_rate,
-        target_length=target_length,
+        target_length=audio_len,
         hop_length=pipeline.transforms.hop_length,
         num_downsamples=sum(pipeline.unet.has_resampling),
         dtype=pipeline.dtype,
@@ -202,12 +208,15 @@ def run_inpainting(
         audio_mask.astype(float),
         src_sample_rate=sample_rate,
         target_sample_rate=pipeline.transforms.sample_rate,
-        target_length=target_length,
+        target_length=audio_len,
         hop_length=pipeline.transforms.hop_length,
         num_downsamples=sum(pipeline.unet.has_resampling),
         dtype=pipeline.dtype,
         device=pipeline.device,
     )
+
+    # Scale the amplitude to a range close to what the model outputs
+    audio = max_abs_scaling(audio, max_abs_value)
 
     # Generate sample from pipeline
     generator = torch.Generator(pipeline.device).manual_seed(int(seed))
@@ -226,7 +235,8 @@ def run_inpainting(
     # Compute waveform and spectrogram representation
     spectrogram = plot_spectrogram(pipeline.transforms(audio))
     waveform = plot_waveform(audio, pipeline.transforms.sample_rate)
-    audio = gradio_audio_postprocessing(audio, target_length)
+    audio = max_abs_scaling(audio, max_abs_value=1.0)
+    audio = gradio_audio_postprocessing(audio, audio_len)
 
     return spectrogram, waveform, (pipeline.transforms.sample_rate, audio)
 
@@ -235,18 +245,18 @@ def run_outpainting(
     pipeline: Pipeline,
     audio: Tuple[int, np.ndarray],
     num_spans: int,
-    duration: int,
     num_inference_steps: int,
     use_neural_vocoder: bool,
     num_griffin_lim_iters: int,
     seed: float,
     eta: float,
+    max_abs_value,
 ) -> Tuple[Figure, Figure, Tuple[int, np.ndarray]]:
     # Convert audio to tensor & resample
     sample_rate, audio = audio
 
     # Apply some preprocessing
-    seed_length = duration * pipeline.transforms.sample_rate
+    seed_length = audio.shape[0]
     audio = gradio_audio_preprocessing(
         audio,
         src_sample_rate=sample_rate,
@@ -256,7 +266,12 @@ def run_outpainting(
         num_downsamples=sum(pipeline.unet.has_resampling),
         dtype=pipeline.dtype,
         device=pipeline.device,
+        pad_end=False,
     )
+    padded_length = audio.shape[-1]
+
+    # Scale the amplitude to a range close to what the model outputs
+    audio = max_abs_scaling(audio, max_abs_value)
 
     # Generate sample from pipeline
     generator = torch.Generator(pipeline.device).manual_seed(int(seed))
@@ -271,9 +286,10 @@ def run_outpainting(
     )
 
     # Compute waveform and spectrogram representation
-    target_length = int(seed_length + (((duration / 2) * num_spans) * sample_rate))
+    target_length = int(seed_length + (((padded_length / 2) * num_spans)))
     spectrogram = plot_spectrogram(pipeline.transforms(audio))
     waveform = plot_waveform(audio, pipeline.transforms.sample_rate)
-    audio = gradio_audio_postprocessing(audio, target_length)
+    audio = max_abs_scaling(audio, max_abs_value=1.0)
+    audio = gradio_audio_postprocessing(audio, target_length, pad_end=False)
 
     return spectrogram, waveform, (pipeline.transforms.sample_rate, audio)

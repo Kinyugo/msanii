@@ -27,12 +27,17 @@ def compute_divisible_length(
     return divisible_length
 
 
-def pad_to_divisible_length(x: Tensor, hop_length: int, num_downsamples: int) -> Tensor:
+def pad_to_divisible_length(
+    x: Tensor, hop_length: int, num_downsamples: int, pad_end: bool = True
+) -> Tensor:
     divisible_length = compute_divisible_length(
         x.shape[-1], hop_length, num_downsamples
     )
     # Pad to appropriate length
-    x = F.pad(x, (0, divisible_length - x.shape[-1]), value=0.0)
+    if pad_end:
+        x = F.pad(x, (0, divisible_length - x.shape[-1]))
+    else:
+        x = F.pad(x, (divisible_length - x.shape[-1], 0))
 
     return x
 
@@ -46,6 +51,7 @@ def gradio_audio_preprocessing(
     num_downsamples: int,
     dtype: torch.dtype,
     device: torch.device,
+    pad_end: bool = True,
 ) -> Tensor:
     # Ensure audio is a float tensor between [-1, 1]
     if issubclass(audio.dtype.type, numbers.Integral):
@@ -60,10 +66,13 @@ def gradio_audio_preprocessing(
     audio = AF.resample(audio, src_sample_rate, target_sample_rate)
 
     # Pad audio to the target length
-    audio = F.pad(audio, (0, target_length - audio.shape[-1]))
+    if pad_end:
+        audio = F.pad(audio, (0, target_length - audio.shape[-1]))
+    else:
+        audio = F.pad(audio, (target_length - audio.shape[-1], 0))
 
     # Pad audio to a length divisible by the number of downsampling layers
-    audio = pad_to_divisible_length(audio, hop_length, num_downsamples)
+    audio = pad_to_divisible_length(audio, hop_length, num_downsamples, pad_end)
 
     # Switch target dtype and device
     audio = audio.to(dtype).to(device)
@@ -71,9 +80,14 @@ def gradio_audio_preprocessing(
     return audio
 
 
-def gradio_audio_postprocessing(audio: Tensor, target_length: int) -> np.ndarray:
+def gradio_audio_postprocessing(
+    audio: Tensor, target_length: int, pad_end: bool = True
+) -> np.ndarray:
     # Ensure audio is the correct length
-    audio = F.pad(audio, (0, target_length - audio.shape[-1]))
+    if pad_end:
+        audio = F.pad(audio, (0, target_length - audio.shape[-1]))
+    else:
+        audio = F.pad(audio, (target_length - audio.shape[-1], 0))
 
     # Remove batch dimension & switch to channels last
     audio = rearrange(audio, "b c l -> (l b) c")
@@ -100,3 +114,10 @@ def generate_gradio_audio_mask(
         mask[start_sample:end_sample, ...] = 0
 
     return mask
+
+
+def max_abs_scaling(x: Tensor, max_abs_value: float = 0.05) -> Tensor:
+    x = x / x.abs().max()
+    x = x * max_abs_value
+
+    return x
