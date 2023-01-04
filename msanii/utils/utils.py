@@ -30,7 +30,7 @@ def plot_spectrogram(spectrogram: Tensor, title: str = "") -> plt.Figure:
     spectrogram = spectrogram.detach().cpu()
 
     fig = plt.figure(dpi=1200)
-    plt.imshow(spectrogram, origin="lower", aspect="auto")
+    plt.imshow(spectrogram, origin="lower", aspect="auto", cmap="magma")
     plt.colorbar()
     plt.title(title)
     plt.xlabel("Time")
