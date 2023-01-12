@@ -102,6 +102,7 @@ def run_audio2audio(
     spectrogram = plot_spectrogram(pipeline.transforms(audio))
     waveform = plot_waveform(audio, pipeline.transforms.sample_rate)
     audio = max_abs_scaling(audio, max_abs_value=1.0)
+    audio_len = int((audio_len * pipeline.transforms.sample_rate) / sample_rate)
     audio = gradio_audio_postprocessing(audio, audio_len)
 
     return spectrogram, waveform, (pipeline.transforms.sample_rate, audio)
@@ -136,11 +137,12 @@ def run_interpolation(
         dtype=pipeline.dtype,
         device=pipeline.device,
     )
+    target_length = int((audio_len * second_sample_rate) / first_sample_rate)
     second_audio = gradio_audio_preprocessing(
         second_audio,
         src_sample_rate=second_sample_rate,
         target_sample_rate=pipeline.transforms.sample_rate,
-        target_length=audio_len,
+        target_length=target_length,
         hop_length=pipeline.transforms.hop_length,
         num_downsamples=sum(pipeline.unet.has_resampling),
         dtype=pipeline.dtype,
@@ -169,6 +171,7 @@ def run_interpolation(
     spectrogram = plot_spectrogram(pipeline.transforms(audio))
     waveform = plot_waveform(audio, pipeline.transforms.sample_rate)
     audio = max_abs_scaling(audio, max_abs_value=1.0)
+    audio_len = int((audio_len * pipeline.transforms.sample_rate) / first_sample_rate)
     audio = gradio_audio_postprocessing(audio, audio_len)
 
     return spectrogram, waveform, (pipeline.transforms.sample_rate, audio)
@@ -236,6 +239,7 @@ def run_inpainting(
     spectrogram = plot_spectrogram(pipeline.transforms(audio))
     waveform = plot_waveform(audio, pipeline.transforms.sample_rate)
     audio = max_abs_scaling(audio, max_abs_value=1.0)
+    audio_len = int((audio_len * pipeline.transforms.sample_rate) / sample_rate)
     audio = gradio_audio_postprocessing(audio, audio_len)
 
     return spectrogram, waveform, (pipeline.transforms.sample_rate, audio)
@@ -286,6 +290,7 @@ def run_outpainting(
     )
 
     # Compute waveform and spectrogram representation
+    seed_length = int((seed_length * pipeline.transforms.sample_rate) / sample_rate)
     target_length = int(seed_length + (((padded_length / 2) * num_spans)))
     spectrogram = plot_spectrogram(pipeline.transforms(audio))
     waveform = plot_waveform(audio, pipeline.transforms.sample_rate)

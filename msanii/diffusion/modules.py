@@ -37,7 +37,7 @@ class DiffusionModule(nn.Module):
         total_inference_steps = math.ceil(
             (self.scheduler.num_train_timesteps * num_inference_steps) / (t_start + 1)
         )
-        step = int(t_start + 1) // num_inference_steps
+        step = math.ceil((t_start + 1) / num_inference_steps)
         timesteps = (
             torch.arange(start=0, end=int(t_start + 1), step=step, device=device)
             .int()

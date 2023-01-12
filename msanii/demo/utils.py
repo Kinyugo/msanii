@@ -65,6 +65,9 @@ def gradio_audio_preprocessing(
         audio = rearrange(audio, "l c -> () c l")  # to batched channel first
     audio = AF.resample(audio, src_sample_rate, target_sample_rate)
 
+    # Rescale target length by the sample rate
+    target_length = int((target_length * target_sample_rate) / src_sample_rate)
+
     # Pad audio to the target length
     if pad_end:
         audio = F.pad(audio, (0, target_length - audio.shape[-1]))

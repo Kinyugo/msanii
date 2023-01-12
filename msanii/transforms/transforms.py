@@ -23,6 +23,7 @@ class Transforms(ConfigMixin, nn.Module):
         n_mels: int = 128,
         feature_range: Tuple[float, float] = (-1.0, 1.0),
         momentum: float = 1e-3,
+        momentum_decay: float = 0.99,
         eps: float = 1e-5,
         clip: bool = True,
         num_griffin_lim_iters: int = 100,
@@ -61,8 +62,8 @@ class Transforms(ConfigMixin, nn.Module):
             hop_length=hop_length,
             power=1.0,
         )
-        self.standard_scaler = StandardScaler(momentum, eps)
-        self.minmax_scaler = MinMaxScaler(feature_range, momentum, clip)
+        self.standard_scaler = StandardScaler(momentum, momentum_decay, eps)
+        self.minmax_scaler = MinMaxScaler(feature_range, momentum, momentum_decay, clip)
 
     @property
     def params_dict(self) -> Dict[str, Any]:

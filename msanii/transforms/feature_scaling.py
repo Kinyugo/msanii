@@ -6,7 +6,7 @@ from torch import Tensor, nn
 
 class StandardScaler(nn.Module):
     def __init__(
-        self, momentum: float = 1e-3, momentum_decay: float = 1e-3, eps: float = 1e-5
+        self, momentum: float = 1e-3, momentum_decay: float = 0.99, eps: float = 1e-5
     ) -> None:
         super().__init__()
 
@@ -69,7 +69,7 @@ class MinMaxScaler(nn.Module):
         self,
         feature_range: Tuple[float, float] = (-1.0, 1.0),
         momentum: float = 1e-3,
-        momentum_decay=1e-3,
+        momentum_decay=0.99,
         clip: bool = True,
     ) -> None:
         super().__init__()
