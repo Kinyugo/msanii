@@ -173,3 +173,9 @@ logs/
 
 # Random collection of scripts and notebooks for hacking
 playground/
+
+# Generated samples
+samples/
+
+# Dummy data for testing
+dummy_data/

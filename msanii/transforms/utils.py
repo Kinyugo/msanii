@@ -2,10 +2,11 @@ import torch
 
 
 def get_complex_dtype(real_dtype: torch.dtype) -> torch.dtype:
-    if real_dtype == torch.double:
+    if "double" in repr(real_dtype):
         return torch.cdouble
-    if real_dtype == torch.float:
-        return torch.cfloat
-    if real_dtype == torch.half:
+    if "float16" in repr(real_dtype):
         return torch.complex32
+    if "float" in repr(real_dtype):
+        return torch.cfloat
+
     raise ValueError(f"Unexpected dtype {real_dtype}")

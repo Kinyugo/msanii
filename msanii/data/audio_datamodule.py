@@ -17,6 +17,7 @@ class AudioDataModule(L.LightningDataModule):
         batch_size: int = 32,
         num_workers: int = 4,
         pin_memory: bool = False,
+        shuffle: bool = True,
     ) -> None:
 
         super().__init__()
@@ -29,6 +30,7 @@ class AudioDataModule(L.LightningDataModule):
         self.batch_size = batch_size
         self.num_workers = num_workers
         self.pin_memory = pin_memory
+        self.shuffle = shuffle
 
     def setup(self, stage: str = None) -> None:
         self.dataset = AudioDataset(
@@ -45,4 +47,5 @@ class AudioDataModule(L.LightningDataModule):
             batch_size=self.batch_size,
             num_workers=self.num_workers,
             pin_memory=self.pin_memory,
+            shuffle=self.shuffle,
         )
