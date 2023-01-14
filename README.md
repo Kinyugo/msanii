@@ -85,3 +85,18 @@ To run the demo via CLI you need to define a config file. Check for sample confi
 ```bash
     python -m msanii.demo.demo <path-to-your-config.yml-file>
 ```
+
+## Contribute to the Project
+
+We are always looking for ways to improve and expand our project, and we welcome contributions from the community. Here are a few ways you can get involved:
+
+- **Bug fixes and feature requests:** If you find any issues with the project, please open a GitHub issue or submit a pull request with a fix.
+- **Data collection:** We are always in need of more data to improve the performance of our models. If you have any relevant data that you would like to share, please let us know.
+- **Feedback:** We value feedback from our users and would love to hear your thoughts on the project. Please feel free to reach out to us with any suggestions or comments.
+- **Funding:** If you find our project helpful, consider supporting us through GitHub Sponsors. Your support will help us continue to maintain and improve the project.
+- **Computational resources:** If you have access to computational resources such as GPU clusters, you can help us by providing access to these resources to run experiments and improve the project.
+- **Code contributions:** If you are a developer and want to contribute to the codebase, feel free to open a pull request.
+- **Documentation:** If you have experience with documentation and want to help improve the project's documentation please let us know.
+- **Marketing:** Share the project with your friends, colleagues, and on social media to help increase its visibility and attract more contributors.
+- **Educational Material:** If you are an educator or content creator you can help by creating tutorials, guides or educational material that can help others understand the project better.
+- **Discussing and sharing ideas:** Even if you don't have the time or technical skills to contribute directly to the code or documentation, you can still help by sharing and discussing ideas with the community. This can help identify new features or use cases, or find ways to improve existing ones.
