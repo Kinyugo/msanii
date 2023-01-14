@@ -97,6 +97,6 @@ We are always looking for ways to improve and expand our project, and we welcome
 - **Computational resources:** If you have access to computational resources such as GPU clusters, you can help us by providing access to these resources to run experiments and improve the project.
 - **Code contributions:** If you are a developer and want to contribute to the codebase, feel free to open a pull request.
 - **Documentation:** If you have experience with documentation and want to help improve the project's documentation please let us know.
-- **Promotion:** Share the project with your friends, colleagues, and on social media to help increase its visibility and attract more contributors.
+- **Promotion:** Help increase the visibility and attract more contributors by sharing the project with your friends, colleagues, and on social media.
 - **Educational Material:** If you are an educator or content creator you can help by creating tutorials, guides or educational material that can help others understand the project better.
 - **Discussing and sharing ideas:** Even if you don't have the time or technical skills to contribute directly to the code or documentation, you can still help by sharing and discussing ideas with the community. This can help identify new features or use cases, or find ways to improve existing ones.
