@@ -11,6 +11,7 @@ class SharedConfig:
 
     batch_size: int = 4
     num_frames: int = 8_387_584
+    duration: Optional[int] = None
     output_audio_format: str = "wav"
 
     seed: int = 0

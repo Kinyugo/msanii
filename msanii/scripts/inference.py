@@ -18,6 +18,7 @@ from ..config import (
 )
 from ..data import AudioDataModule
 from ..pipeline import Pipeline
+from ..utils import compute_divisible_length
 from .utils import generate_batch_audio_mask
 
 
@@ -52,11 +53,21 @@ def run_sampling(config: SamplingConfig) -> None:
     n_batches = config.num_samples // config.batch_size
     batches = np.array_split(range(config.num_samples), n_batches)
 
+    # Optionally compute the number of frames from duration
+    num_frames = config.num_frames
+    if config.duration is not None:
+        num_frames = config.duration * pipeline.transforms.sample_rate
+        num_frames = compute_divisible_length(
+            num_frames,
+            pipeline.transforms.hop_length,
+            sum(pipeline.unet.has_resampling),
+        )
+
     for batch_idx, batch in enumerate(
         tqdm(batches, desc="Sampling", disable=(not config.verbose))
     ):
         samples = torch.randn(
-            (len(batch), config.channels, config.num_frames),
+            (len(batch), config.channels, num_frames),
             device=pipeline.device,
             dtype=dtype,
         )
@@ -92,65 +103,19 @@ def run_audio2audio(config: Audio2AudioConfig) -> None:
     # -------------------------------------------
     # Prepare datamodule and dataloader
     # -------------------------------------------
+    # Optionally compute the number of frames from duration
+    num_frames = config.num_frames
+    if config.duration is not None:
+        num_frames = config.duration * pipeline.transforms.sample_rate
+        num_frames = compute_divisible_length(
+            num_frames,
+            pipeline.transforms.hop_length,
+            sum(pipeline.unet.has_resampling),
+        )
     datamodule = AudioDataModule(
         config.data_dir,
         sample_rate=pipeline.transforms.sample_rate,
-        num_frames=config.num_frames,
-        load_random_slice=False,
-        normalize_amplitude=False,
-        batch_size=config.batch_size,
-        num_workers=config.num_workers,
-        pin_memory=config.pin_memory,
-        shuffle=False,
-    )
-    datamodule.prepare_data()
-    datamodule.setup()
-    dataloader = datamodule.train_dataloader()
-
-    # -------------------------------------------
-    # Run sampling
-    # -------------------------------------------
-    for batch_idx, batch in enumerate(
-        tqdm(dataloader, desc="Audio2Audio", disable=(not config.verbose))
-    ):
-        samples = pipeline.sample(
-            batch.to(device).to(dtype),
-            num_inference_steps=config.num_inference_steps,
-            strength=config.strength,
-            generator=torch.Generator(device).manual_seed(config.seed),
-            verbose=config.verbose,
-            use_input_as_seed=True,
-            use_neural_vocoder=config.use_neural_vocoder,
-            num_griffin_lim_iters=config.num_griffin_lim_iters,
-        )
-        save_batch_samples(
-            samples,
-            offset=(batch_idx * config.batch_size),
-            output_dir=config.output_dir,
-            sample_rate=pipeline.transforms.sample_rate,
-            audio_format=config.output_audio_format,
-        )
-
-
-def run_audio2audio(config: Audio2AudioConfig) -> None:
-    # -------------------------------------------
-    # Setup
-    # -------------------------------------------
-    device = torch.device(config.device)
-    dtype = getattr(torch, config.dtype)
-
-    # -------------------------------------------
-    # Load pipeline
-    # -------------------------------------------
-    pipeline = Pipeline.from_pretrained(config.ckpt_path).to(device).to(dtype)
-
-    # -------------------------------------------
-    # Prepare datamodule and dataloader
-    # -------------------------------------------
-    datamodule = AudioDataModule(
-        config.data_dir,
-        sample_rate=pipeline.transforms.sample_rate,
-        num_frames=config.num_frames,
+        num_frames=num_frames,
         load_random_slice=False,
         normalize_amplitude=False,
         batch_size=config.batch_size,
@@ -202,10 +167,19 @@ def run_interpolation(config: InterpolationConfig) -> None:
     # -------------------------------------------
     # Prepare datamodule and dataloader
     # -------------------------------------------
+    # Optionally compute the number of frames from duration
+    num_frames = config.num_frames
+    if config.duration is not None:
+        num_frames = config.duration * pipeline.transforms.sample_rate
+        num_frames = compute_divisible_length(
+            num_frames,
+            pipeline.transforms.hop_length,
+            sum(pipeline.unet.has_resampling),
+        )
     first_datamodule = AudioDataModule(
         config.first_data_dir,
         sample_rate=pipeline.transforms.sample_rate,
-        num_frames=config.num_frames,
+        num_frames=num_frames,
         load_random_slice=False,
         normalize_amplitude=False,
         batch_size=config.batch_size,
@@ -216,7 +190,7 @@ def run_interpolation(config: InterpolationConfig) -> None:
     second_datamodule = AudioDataModule(
         config.second_data_dir,
         sample_rate=pipeline.transforms.sample_rate,
-        num_frames=config.num_frames,
+        num_frames=num_frames,
         load_random_slice=False,
         normalize_amplitude=False,
         batch_size=config.batch_size,
@@ -242,7 +216,7 @@ def run_interpolation(config: InterpolationConfig) -> None:
     for batch_idx, (first_batch, second_batch) in enumerate(
         tqdm(
             zip(first_dataloader, second_dataloader),
-            desc="Audio2Audio",
+            desc="Interpolation",
             disable=(not config.verbose),
         )
     ):
@@ -281,10 +255,19 @@ def run_inpainting(config: InpaintingConfig) -> None:
     # -------------------------------------------
     # Prepare datamodule and dataloader
     # -------------------------------------------
+    # Optionally compute the number of frames from duration
+    num_frames = config.num_frames
+    if config.duration is not None:
+        num_frames = config.duration * pipeline.transforms.sample_rate
+        num_frames = compute_divisible_length(
+            num_frames,
+            pipeline.transforms.hop_length,
+            sum(pipeline.unet.has_resampling),
+        )
     datamodule = AudioDataModule(
         config.data_dir,
         sample_rate=pipeline.transforms.sample_rate,
-        num_frames=config.num_frames,
+        num_frames=num_frames,
         load_random_slice=False,
         normalize_amplitude=False,
         batch_size=config.batch_size,
@@ -349,10 +332,19 @@ def run_outpainting(config: OutpaintingConfig) -> None:
     # -------------------------------------------
     # Prepare datamodule and dataloader
     # -------------------------------------------
+    # Optionally compute the number of frames from duration
+    num_frames = config.num_frames
+    if config.duration is not None:
+        num_frames = config.duration * pipeline.transforms.sample_rate
+        num_frames = compute_divisible_length(
+            num_frames,
+            pipeline.transforms.hop_length,
+            sum(pipeline.unet.has_resampling),
+        )
     datamodule = AudioDataModule(
         config.data_dir,
         sample_rate=pipeline.transforms.sample_rate,
-        num_frames=config.num_frames,
+        num_frames=num_frames,
         load_random_slice=False,
         normalize_amplitude=False,
         batch_size=config.batch_size,
@@ -368,7 +360,7 @@ def run_outpainting(config: OutpaintingConfig) -> None:
     # Run sampling
     # -------------------------------------------
     for batch_idx, batch in enumerate(
-        tqdm(dataloader, desc="Audio2Audio", disable=(not config.verbose))
+        tqdm(dataloader, desc="Outpainting", disable=(not config.verbose))
     ):
         samples = pipeline.outpaint(
             batch.to(device).to(dtype),

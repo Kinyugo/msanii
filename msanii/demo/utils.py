@@ -1,4 +1,3 @@
-import math
 import numbers
 
 import numpy as np
@@ -8,38 +7,7 @@ from torch import Tensor
 from torch.nn import functional as F
 from torchaudio import functional as AF
 
-
-def classname_from_class(classpath) -> str:
-    return str(classpath).rsplit(".", maxsplit=1)[1].strip("'>\"")
-
-
-def compute_divisible_length(
-    curr_length: int, hop_length: int, num_downsamples: int
-) -> int:
-    # Current time frame size
-    num_time_frames = int((curr_length / hop_length) + 1)
-    # Divisible time frames
-    divisible_time_frames = math.ceil(num_time_frames / 2**num_downsamples) * (
-        2**num_downsamples
-    )
-    divisible_length = (divisible_time_frames - 1) * hop_length
-
-    return divisible_length
-
-
-def pad_to_divisible_length(
-    x: Tensor, hop_length: int, num_downsamples: int, pad_end: bool = True
-) -> Tensor:
-    divisible_length = compute_divisible_length(
-        x.shape[-1], hop_length, num_downsamples
-    )
-    # Pad to appropriate length
-    if pad_end:
-        x = F.pad(x, (0, divisible_length - x.shape[-1]))
-    else:
-        x = F.pad(x, (divisible_length - x.shape[-1], 0))
-
-    return x
+from ..utils import pad_to_divisible_length
 
 
 def gradio_audio_preprocessing(

@@ -1,7 +1,10 @@
+import math
+
 import torch
 from einops import reduce
 from matplotlib import pyplot as plt
 from torch import Tensor, nn
+from torch.nn import functional as F
 
 
 def plot_waveform(waveform: Tensor, sample_rate: int, title: str = "") -> plt.Figure:
@@ -69,3 +72,32 @@ def clone_model_parameters(src_model: nn.Module, target_model: nn.Module) -> nn.
         target_param.data = src_param.data
 
     return target_model
+
+
+def compute_divisible_length(
+    curr_length: int, hop_length: int, num_downsamples: int
+) -> int:
+    # Current time frame size
+    num_time_frames = int((curr_length / hop_length) + 1)
+    # Divisible time frames
+    divisible_time_frames = math.ceil(num_time_frames / 2**num_downsamples) * (
+        2**num_downsamples
+    )
+    divisible_length = (divisible_time_frames - 1) * hop_length
+
+    return divisible_length
+
+
+def pad_to_divisible_length(
+    x: Tensor, hop_length: int, num_downsamples: int, pad_end: bool = True
+) -> Tensor:
+    divisible_length = compute_divisible_length(
+        x.shape[-1], hop_length, num_downsamples
+    )
+    # Pad to appropriate length
+    if pad_end:
+        x = F.pad(x, (0, divisible_length - x.shape[-1]))
+    else:
+        x = F.pad(x, (divisible_length - x.shape[-1], 0))
+
+    return x

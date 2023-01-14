@@ -1,8 +1,10 @@
 from dataclasses import dataclass
-from typing import Optional
+
+from omegaconf import MISSING
 
 
 @dataclass
 class DemoConfig:
-    pipeline_ckpt_path: str
+    ckpt_path: str = MISSING
     device: str = "cpu"
+    dtype: str = "float32"

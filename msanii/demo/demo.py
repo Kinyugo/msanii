@@ -29,8 +29,8 @@ def run_demo(config: DemoConfig) -> None:
     # Load Pipeline checkpoint
     # -------------------------------------------
     pipeline = Pipeline.from_pretrained(
-        config.pipeline_ckpt_path, device=torch.device(config.device)
-    )
+        config.ckpt_path, device=torch.device(config.device)
+    ).to(getattr(torch, config.dtype))
 
     # -------------------------------------------
     # Define gradio interface
