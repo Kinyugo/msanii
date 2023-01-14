@@ -2,6 +2,8 @@
 
 A novel diffusion-based model for synthesizing long-context, high-fidelity music efficiently.
 
+<iframe src="https://drive.google.com/file/d/1Bz8XyyyQxBdtbzKBYOeJ5g9fGIcflr79/preview" width="640" height="480" allow="autoplay"></iframe>
+
 ## Abstract
 
 > In this paper, we present Msanii, a novel diffusion-based model for synthesizing long-context, high-fidelity music efficiently. Our model combines the expressiveness of mel spectrograms, the generative capabilities of diffusion models, and the vocoding capabilities of neural vocoders. We demonstrate the effectiveness of Msanii by synthesizing tens of seconds _190 seconds_ of _stereo_ music at high sample rates _44.1 kHz_ without the use of concatenative synthesis, cascading architectures, or compression techniques. To the best of our knowledge, this is the first work to successfully employ a diffusion-based model for synthesizing such long music samples at high sample rates. Our code and demo can be found [here](https://github.com/Kinyugo/msanii)
