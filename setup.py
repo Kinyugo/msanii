@@ -20,6 +20,7 @@ REQUIRED = [
     "einops>=0.4",
     "gradio",
     "matplotlib",
+    "omegaconf",
     "typing_extensions",
 ]
 
