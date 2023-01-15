@@ -12,19 +12,6 @@ This is a work in progress and has not been finalized. The results and approach 
 
 ## Samples
 
-<style>
-  .videos {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 0.5rem;
-      padding: 0.5rem;
-  }
-  .video {
-      width: 100%;
-      height: auto;
-  }
-</style>
-
 <div class="videos">
     <video class="video" controls>
       <source src="assets/sample_0.mp4" type="video/mp4">
