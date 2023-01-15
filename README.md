@@ -75,6 +75,7 @@ Msanii supports the following inference tasks:
 Each task requires a different config file. Check `conf` directory for samples.
 
 ```bash
+    gdown 1G9kF0r5vxYXPSdSuv4t3GR-sBO8xGFCe # model checkpoint
     python -m msanii.scripts.inference <task> <path-to-your-config.yml-file>
 ```
 
@@ -91,6 +92,7 @@ Each task requires a different config file. Check `conf` directory for samples.
 To run the demo via CLI you need to define a config file. Check for sample config files within the `conf` directory.
 
 ```bash
+    gdown 1G9kF0r5vxYXPSdSuv4t3GR-sBO8xGFCe # model checkpoint
     python -m msanii.demo.demo <path-to-your-config.yml-file>
 ```
 
@@ -108,4 +110,4 @@ We are always looking for ways to improve and expand our project, and we welcome
 - **Promotion:** Help increase the visibility and attract more contributors by sharing the project with your friends, colleagues, and on social media.
 - **Educational Material:** If you are an educator or content creator you can help by creating tutorials, guides or educational material that can help others understand the project better.
 - **Discussing and sharing ideas:** Even if you don't have the time or technical skills to contribute directly to the code or documentation, you can still help by sharing and discussing ideas with the community. This can help identify new features or use cases, or find ways to improve existing ones.
-- **Ethics Review:** Help us ensure that the project follows ethical standards by reviewing data and models for potential infringements. Additionally, please do not use the project or its models to train or generate copyrighted works without proper authorization.
+- **Ethical Review:** Help us ensure that the project follows ethical standards by reviewing data and models for potential infringements. Additionally, please do not use the project or its models to train or generate copyrighted works without proper authorization.
