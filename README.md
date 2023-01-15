@@ -10,6 +10,36 @@ A novel diffusion-based model for synthesizing long-context, high-fidelity music
 
 This is a work in progress and has not been finalized. The results and approach presented are subject to change and should not be considered final.
 
+## Samples
+
+<style>
+  .videos {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.5rem;
+      padding: 0.5rem;
+  }
+  .video {
+      width: 100%;
+      height: auto;
+  }
+</style>
+
+<div class="videos">
+    <video class="video" controls>
+      <source src="assets/sample_0.mp4" type="video/mp4">
+    </video>
+    <video class="video" controls>
+      <source src="assets/sample_1.mp4" type="video/mp4">
+    </video>
+    <video class="video" controls>
+      <source src="assets/sample_2.mp4" type="video/mp4">
+    </video>
+    <video class="video" controls>
+      <source src="assets/sample_3.mp4" type="video/mp4">
+    </video>
+</div>
+
 ## Setup
 
 Setup your virtual environment using conda or venv.
