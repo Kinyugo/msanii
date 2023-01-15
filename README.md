@@ -25,7 +25,7 @@ Setup your virtual environment using conda or venv.
 ### Install package from git
 
 ```bash
-    pip install -q git+https://github.com/Kinyugo/msanii@main
+    pip install -q git+https://github.com/Kinyugo/msanii.git
 ```
 
 ### Install package in edit mode
