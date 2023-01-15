@@ -14,16 +14,16 @@ This is a work in progress and has not been finalized. The results and approach 
 
 <div class="videos">
     <video class="video" controls>
-      <source src="assets/sample_0.mp4" type="video/mp4">
+      <source src="https://github.com/Kinyugo/msanii-demo/raw/main/assets/sample_0.mp4" type="video/mp4">
     </video>
     <video class="video" controls>
-      <source src="assets/sample_1.mp4" type="video/mp4">
+      <source src="https://github.com/Kinyugo/msanii-demo/raw/main/assets/sample_1.mp4" type="video/mp4">
     </video>
     <video class="video" controls>
-      <source src="assets/sample_2.mp4" type="video/mp4">
+      <source src="https://github.com/Kinyugo/msanii-demo/raw/main/assets/sample_2.mp4" type="video/mp4">
     </video>
     <video class="video" controls>
-      <source src="assets/sample_3.mp4" type="video/mp4">
+      <source src="https://github.com/Kinyugo/msanii-demo/raw/main/assets/sample_3.mp4" type="video/mp4">
     </video>
 </div>
 
