@@ -12,9 +12,11 @@ This is a work in progress and has not been finalized. The results and approach 
 
 ## Samples
 
-| [ ![ Midnight Melodies ](http://img.youtube.com/vi/cFrpR0wc_A4/0.jpg) ](http://www.youtube.com/watch?v=cFrpR0wc_A4 "Midnight Melodies")         | [ ![ Echoes of Yesterday ](http://img.youtube.com/vi/tWlEqkRxZSU/0.jpg) ](http://www.youtube.com/watch?v=tWlEqkRxZSU "Echoes of Yesterday") |
-| ----------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| [ ![ Rainy Day Reflections ](http://img.youtube.com/vi/-ZikAJxNomM/0.jpg) ](http://www.youtube.com/watch?v=-ZikAJxNomM "Rainy Day Reflections") | [ ![ Starlight Sonatas ](http://img.youtube.com/vi/3adYlNVZSxA/0.jpg) ](http://www.youtube.com/watch?v=3adYlNVZSxA "Starlight Sonatas")     |
+|                                                              **Midnight Melodies**                                                              |                                                           **Echoes of Yesterday**                                                           |
+| :---------------------------------------------------------------------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------------------------------------------------------------------: |
+|     [ ![ Midnight Melodies ](http://img.youtube.com/vi/cFrpR0wc_A4/0.jpg) ](http://www.youtube.com/watch?v=cFrpR0wc_A4 "Midnight Melodies")     | [ ![ Echoes of Yesterday ](http://img.youtube.com/vi/tWlEqkRxZSU/0.jpg) ](http://www.youtube.com/watch?v=tWlEqkRxZSU "Echoes of Yesterday") |
+|                                                            **Rainy Day Reflections**                                                            |                                                            **Starlight Sonatas**                                                            |
+| [ ![ Rainy Day Reflections ](http://img.youtube.com/vi/-ZikAJxNomM/0.jpg) ](http://www.youtube.com/watch?v=-ZikAJxNomM "Rainy Day Reflections") |   [ ![ Starlight Sonatas ](http://img.youtube.com/vi/3adYlNVZSxA/0.jpg) ](http://www.youtube.com/watch?v=3adYlNVZSxA "Starlight Sonatas")   |
 
 ## Setup
 
