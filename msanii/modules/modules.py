@@ -47,7 +47,9 @@ class TimestepEmbedding(nn.Module):
     def forward(self, x: Tensor) -> Tensor:
         half_d_timestep = self.d_timestep // 2
         emb = np.log(10000) / (half_d_timestep - 1)
-        emb = torch.exp(torch.arange(half_d_timestep, device=x.device) * -emb)
+        emb = torch.exp(torch.arange(half_d_timestep, device=x.device) * -emb).to(
+            x.dtype
+        )
         emb = x[:, None] * emb[None, :]
         emb = torch.cat((emb.sin(), emb.cos()), dim=-1)
         emb = self.fn(emb)
