@@ -18,7 +18,7 @@ def plot_waveform(waveform: Tensor, sample_rate: int, title: str = "") -> plt.Fi
     n_frames = waveform.shape[-1]
     time_axis = torch.linspace(0, n_frames / (sample_rate / skip), steps=n_frames)
 
-    fig = plt.figure(dpi=1200)
+    fig = plt.figure(dpi=300)
     plt.plot(time_axis, waveform, linewidth=1)
     plt.grid(True)
     plt.title(title)
@@ -32,7 +32,7 @@ def plot_spectrogram(spectrogram: Tensor, title: str = "") -> plt.Figure:
     spectrogram = reduce(spectrogram, "... f t-> f t", reduction="mean")
     spectrogram = spectrogram.detach().cpu()
 
-    fig = plt.figure(dpi=1200)
+    fig = plt.figure(dpi=300)
     plt.imshow(spectrogram, origin="lower", aspect="auto", cmap="magma")
     plt.colorbar()
     plt.title(title)
@@ -48,7 +48,7 @@ def plot_distribution(x: Tensor, title: str = "") -> plt.Figure:
 
     hist, edges = torch.histogram(x, density=True)
 
-    fig = plt.figure(dpi=1200)
+    fig = plt.figure(dpi=300)
     plt.plot(edges[:-1], hist)
     plt.title(f"{title} | Mean: {mean:.4f} Std: {std:.4f}")
     plt.xlabel("X")
