@@ -1,4 +1,5 @@
 from argparse import ArgumentParser
+from typing import Optional
 
 import gradio as gr
 import matplotlib
@@ -17,7 +18,7 @@ from .helpers import (
 )
 
 
-def run_demo(config: DemoConfig) -> None:
+def run_demo(config: DemoConfig) -> Optional[gr.Blocks]:
     # -------------------------------------------
     # Configure Matplotlib
     # -------------------------------------------
@@ -157,6 +158,7 @@ def run_demo(config: DemoConfig) -> None:
                     max_abs_value_slider = gr.Slider(
                         minimum=0, maximum=1, value=0.05, label="Maximum Absolute Value"
                     )
+                    verbose_checkbox = gr.Checkbox(value=False, label="Verbose")
 
         sampling_button.click(
             lambda *args: run_sampling(pipeline, *args),
@@ -168,6 +170,7 @@ def run_demo(config: DemoConfig) -> None:
                 use_nv_checkbox,
                 griffin_lim_iters_slider,
                 seed,
+                verbose_checkbox,
             ],
             outputs=[
                 sampling_spectrogram_output,
@@ -187,6 +190,7 @@ def run_demo(config: DemoConfig) -> None:
                 seed,
                 eta_slider,
                 max_abs_value_slider,
+                verbose_checkbox,
             ],
             outputs=[a2a_spectrogram_output, a2a_waveform_output, a2a_audio_output],
         )
@@ -204,6 +208,7 @@ def run_demo(config: DemoConfig) -> None:
                 seed,
                 eta_slider,
                 max_abs_value_slider,
+                verbose_checkbox,
             ],
             outputs=[
                 interpolation_spectrogram_output,
@@ -225,6 +230,7 @@ def run_demo(config: DemoConfig) -> None:
                 seed,
                 eta_slider,
                 max_abs_value_slider,
+                verbose_checkbox,
             ],
             outputs=[
                 inpainting_spectrogram_output,
@@ -244,6 +250,7 @@ def run_demo(config: DemoConfig) -> None:
                 seed,
                 eta_slider,
                 max_abs_value_slider,
+                verbose_checkbox,
             ],
             outputs=[
                 outpainting_spectrogram_output,
@@ -252,7 +259,10 @@ def run_demo(config: DemoConfig) -> None:
             ],
         )
 
-    demo.launch(debug=True)
+    if config.launch:
+        demo.launch(debug=True)
+    else:
+        return demo
 
 
 if __name__ == "__main__":

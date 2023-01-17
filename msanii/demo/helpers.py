@@ -27,7 +27,10 @@ def run_sampling(
     use_neural_vocoder: bool,
     num_griffin_lim_iters: int,
     seed: float,
+    verbose: bool,
 ) -> Tuple[Figure, Figure, Tuple[int, np.ndarray]]:
+    if verbose:
+        print(f"Pipeline device: {pipeline.device}, dtype: {pipeline.dtype}")
     # Prepare sample audio that will guide the sampling process
     audio_length = duration * pipeline.transforms.sample_rate
     divisible_length = compute_divisible_length(
@@ -46,6 +49,7 @@ def run_sampling(
         use_neural_vocoder=use_neural_vocoder,
         num_griffin_lim_iters=num_griffin_lim_iters,
         eta=eta,
+        verbose=verbose,
     )
 
     # Compute waveform and spectrogram representation
@@ -66,7 +70,10 @@ def run_audio2audio(
     seed: float,
     eta: float,
     max_abs_value: float,
+    verbose: bool,
 ) -> Tuple[Figure, Figure, Tuple[int, np.ndarray]]:
+    if verbose:
+        print(f"Pipeline device: {pipeline.device}, dtype: {pipeline.dtype}")
     # Convert audio to tensor & resample
     sample_rate, audio = audio
 
@@ -95,6 +102,7 @@ def run_audio2audio(
         use_input_as_seed=True,
         num_griffin_lim_iters=num_griffin_lim_iters,
         eta=eta,
+        verbose=verbose,
     )
 
     # Compute waveform and spectrogram representation
@@ -119,7 +127,10 @@ def run_interpolation(
     seed: float,
     eta: float,
     max_abs_value: float,
+    verbose: bool,
 ) -> Tuple[Figure, Figure, Tuple[int, np.ndarray]]:
+    if verbose:
+        print(f"Pipeline device: {pipeline.device}, dtype: {pipeline.dtype}")
     # Convert audio to tensor & resample
     first_sample_rate, first_audio = first_audio
     second_sample_rate, second_audio = second_audio
@@ -164,6 +175,7 @@ def run_interpolation(
         use_neural_vocoder=use_neural_vocoder,
         num_griffin_lim_iters=num_griffin_lim_iters,
         eta=eta,
+        verbose=verbose,
     )
 
     # Compute waveform and spectrogram representation
@@ -188,7 +200,11 @@ def run_inpainting(
     seed: float,
     eta: float,
     max_abs_value: float,
+    verbose: bool,
 ) -> Tuple[Figure, Figure, Tuple[int, np.ndarray]]:
+    if verbose:
+        print(f"Pipeline device: {pipeline.device}, dtype: {pipeline.dtype}")
+
     sample_rate, audio = audio
 
     # Generate mask from the mask-spec
@@ -232,6 +248,7 @@ def run_inpainting(
         use_neural_vocoder=use_neural_vocoder,
         num_griffin_lim_iters=num_griffin_lim_iters,
         eta=eta,
+        verbose=verbose,
     )
 
     # Compute waveform and spectrogram representation
@@ -254,7 +271,10 @@ def run_outpainting(
     seed: float,
     eta: float,
     max_abs_value,
+    verbose: bool,
 ) -> Tuple[Figure, Figure, Tuple[int, np.ndarray]]:
+    if verbose:
+        print(f"Pipeline device: {pipeline.device}, dtype: {pipeline.dtype}")
     # Convert audio to tensor & resample
     sample_rate, audio = audio
 
@@ -286,6 +306,7 @@ def run_outpainting(
         use_neural_vocoder=use_neural_vocoder,
         num_griffin_lim_iters=num_griffin_lim_iters,
         eta=eta,
+        verbose=verbose,
     )
 
     # Compute waveform and spectrogram representation
