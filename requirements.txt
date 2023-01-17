@@ -1,6 +1,6 @@
 diffusers
 einops>=0.4
-gradio
+gradio>=3.15.0
 lightning
 matplotlib>=3.6.2
 numpy

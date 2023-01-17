@@ -18,7 +18,7 @@ REQUIRED = [
     "tqdm",
     "numpy",
     "einops>=0.4",
-    "gradio",
+    "gradio>=3.15.0",
     "matplotlib>=3.6.2",
     "omegaconf",
     "typing_extensions",
