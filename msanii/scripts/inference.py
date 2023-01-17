@@ -27,6 +27,7 @@ def save_batch_samples(
 ) -> None:
     # torchaudio can only save cpu samples
     samples = samples.detach().cpu()
+    samples = samples.to(torch.float32)
 
     os.makedirs(output_dir, exist_ok=True)
     for i, sample in enumerate(samples):
