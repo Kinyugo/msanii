@@ -23,7 +23,7 @@ def run_demo(config: DemoConfig) -> None:
     # -------------------------------------------
     # Prevents pixelated fonts on figures
     matplotlib.use("webagg")
-    matplotlib.style.use(["seaborn-v0_8", "fast"])
+    matplotlib.style.use(["seaborn", "fast"])
 
     # -------------------------------------------
     # Load Pipeline checkpoint

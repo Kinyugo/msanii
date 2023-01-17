@@ -146,7 +146,7 @@ def run_training(config: TrainingConfig) -> None:
     # -------------------------------------------
     # Prevents pixelated fonts on figures
     matplotlib.use("webagg")
-    matplotlib.style.use(["seaborn-v0_8", "fast"])
+    matplotlib.style.use(["seaborn", "fast"])
 
     # -------------------------------------------
     # Train Vocoder
