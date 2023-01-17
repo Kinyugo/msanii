@@ -44,14 +44,16 @@ class TimestepEmbedding(nn.Module):
             Rearrange("b c -> b c () ()"),
         )
 
+    @property
+    def dtype(self) -> torch.dtype:
+        return next(self.parameters()).dtype
+
     def forward(self, x: Tensor) -> Tensor:
         half_d_timestep = self.d_timestep // 2
         emb = np.log(10000) / (half_d_timestep - 1)
-        emb = torch.exp(torch.arange(half_d_timestep, device=x.device) * -emb).to(
-            x.dtype
-        )
+        emb = torch.exp(torch.arange(half_d_timestep, device=x.device) * -emb)
         emb = x[:, None] * emb[None, :]
-        emb = torch.cat((emb.sin(), emb.cos()), dim=-1)
+        emb = torch.cat((emb.sin(), emb.cos()), dim=-1).to(self.dtype)
         emb = self.fn(emb)
 
         return emb
