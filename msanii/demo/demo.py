@@ -36,7 +36,8 @@ def run_demo(config: DemoConfig) -> Optional[gr.Blocks]:
     # -------------------------------------------
     # Define gradio interface
     # -------------------------------------------
-    with gr.Blocks() as demo:
+    background_css = "background: rgb(222,222,222); background: radial-gradient(circle, rgba(222,222,222,1) 0%, rgba(231,231,240,1) 48%, rgba(238,250,252,1) 100%);"
+    with gr.Blocks(css=f".gradio {background_css}") as demo:
         with gr.Row():
             # Main Section
             with gr.Column(scale=2):
