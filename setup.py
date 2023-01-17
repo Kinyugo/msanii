@@ -19,7 +19,7 @@ REQUIRED = [
     "numpy",
     "einops>=0.4",
     "gradio",
-    "matplotlib",
+    "matplotlib>=3.6.2",
     "omegaconf",
     "typing_extensions",
 ]

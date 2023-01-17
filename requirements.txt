@@ -2,7 +2,7 @@ diffusers
 einops>=0.4
 gradio
 lightning
-matplotlib
+matplotlib>=3.6.2
 numpy
 omegaconf
 torch>=1.6
