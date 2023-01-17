@@ -1,4 +1,3 @@
-import math
 from typing import Any, Optional, Tuple, Union
 
 import torch
@@ -30,17 +29,17 @@ class DiffusionModule(nn.Module):
         self, num_inference_steps: int, strength: float, device: torch.device
     ) -> Tuple[Tensor, int]:
         # Ensure number of inference steps is not more than start timestep
-        t_start = ((strength * self.scheduler.num_train_timesteps) - 1) + 1e-5
+        t_start = int(strength * self.scheduler.num_train_timesteps) - 1
         num_inference_steps = min(num_inference_steps, t_start + 1)
 
         # Compute inference steps for the whole noising schedule
-        total_inference_steps = math.ceil(
+        total_inference_steps = int(
             (self.scheduler.num_train_timesteps * num_inference_steps) / (t_start + 1)
         )
-        step = int(((t_start + 1) / num_inference_steps))
-        step = max(step, 1)
         timesteps = (
-            torch.arange(start=0, end=int(t_start + 1), step=step, device=device)
+            torch.linspace(
+                start=0, end=t_start, steps=num_inference_steps, device=device
+            )
             .int()
             .flipud()
         )
