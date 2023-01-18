@@ -17,6 +17,25 @@ from .helpers import (
     run_sampling,
 )
 
+HEADER = """
+<div style="display:flex; gap: 1em;">
+    <a target="_blank" href="https://arxiv.org/abs/2301.06468"><img
+        src="https://img.shields.io/badge/arXiv-2301.06468-<COLOR>.svg" alt="arXiv">
+    </a>
+    <a target="_blank" href="https://github.com/Kinyugo/msanii">
+        <img alt="GitHub Repo stars" src="https://img.shields.io/github/stars/Kinyugo/msanii?style=social">
+    </a>
+    <a target="_blank" href="https://huggingface.co/spaces/kinyugo/msanii" rel="noopener noreferrer"><img
+        src="https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Spaces-blue" alt="Hugging Face Spaces">
+    </a>
+    <a target="_blank" href="https://colab.research.google.com/github/Kinyugo/msanii/blob/main/notebooks/msanii_demo.ipynb">
+        <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/>
+    </a>
+</div>
+
+# Msanii: High Fidelity Music Synthesis on a Shoestring Budget
+"""
+
 
 def run_demo(config: DemoConfig) -> Optional[gr.Blocks]:
     # -------------------------------------------
@@ -36,7 +55,9 @@ def run_demo(config: DemoConfig) -> Optional[gr.Blocks]:
     # -------------------------------------------
     # Define gradio interface
     # -------------------------------------------
-    with gr.Blocks(css=".gradio-container {background: white;}") as demo:
+    with gr.Blocks(title="Msanii") as demo:
+        gr.Markdown(HEADER)
+
         with gr.Row():
             # Main Section
             with gr.Column(scale=2):

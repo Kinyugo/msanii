@@ -1,5 +1,7 @@
 # Msanii: High Fidelity Music Synthesis on a Shoestring Budget
 
+[![arXiv](https://img.shields.io/badge/arXiv-2301.06468-<COLOR>.svg)](https://arxiv.org/abs/2301.06468) [![Hugging Face Spaces](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Spaces-blue)](https://huggingface.co/spaces/kinyugo/msanii) [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Kinyugo/msanii/blob/main/notebooks/msanii_demo.ipynb) [![GitHub Repo stars](https://img.shields.io/github/stars/Kinyugo/msanii?style=social) ](https://github.com/Kinyugo/msanii)
+
 A novel diffusion-based model for synthesizing long-context, high-fidelity music efficiently.
 
 ## Abstract
@@ -11,6 +13,8 @@ A novel diffusion-based model for synthesizing long-context, high-fidelity music
 This is a work in progress and has not been finalized. The results and approach presented are subject to change and should not be considered final.
 
 ## Samples
+
+See more [here](https://kinyugo.github.io/msanii-demo/).
 
 |                                                              **Midnight Melodies**                                                              |                                                           **Echoes of Yesterday**                                                           |
 | :---------------------------------------------------------------------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------------------------------------------------------------------: |
@@ -81,11 +85,9 @@ Each task requires a different config file. Check `conf` directory for samples.
 
 ## Demo
 
-### Notebook
+### HF Spaces & Notebook
 
-<a target="_blank" href="https://colab.research.google.com/github/Kinyugo/msanii/blob/main/notebooks/msanii_demo.ipynb">
-  <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/>
-</a>
+[![Hugging Face Spaces](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Spaces-blue)](https://space) [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Kinyugo/msanii/blob/main/notebooks/msanii_demo.ipynb)
 
 ### CLI
 
