@@ -1,0 +1,4 @@
+ckpt_path: checkpoints/pipeline/msanii.pt
+device: cpu
+dtype: float32
+launch: true

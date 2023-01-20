@@ -1,5 +1,5 @@
 ckpt_path: msanii.pt
-output_dir: samples/sampling
+output_dir: samples/interpolation
 batch_size: 4
 num_frames: 8387584
 duration: null
@@ -12,5 +12,9 @@ verbose: false
 use_neural_vocoder: true
 num_griffin_lim_iters: 200
 _kwargs_: {}
-channels: 2
-num_samples: 16
+first_data_dir: audio_data_dir_1
+second_data_dir: audio_data_dir_2
+num_workers: 4
+pin_memory: false
+ratio: 0.5
+strength: 1.0

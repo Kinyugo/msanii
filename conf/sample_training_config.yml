@@ -1,0 +1,202 @@
+vocoder:
+  datamodule:
+    _target_: msanii.data.AudioDataModule
+    data_dir: audio_data_dir
+    sample_rate: 44100
+    num_frames: 523264
+    load_random_slice: true
+    normalize_amplitude: false
+    batch_size: 8
+    num_workers: 8
+    pin_memory: true
+  transforms:
+    _target_: msanii.transforms.Transforms
+    sample_rate: 44100
+    n_fft: 2048
+    win_length: null
+    hop_length: null
+    n_mels: 128
+    feature_range:
+      - -1.0
+      - 1.0
+    momentum: 0.001
+    eps: 1.0e-05
+    clip: true
+    num_griffin_lim_iters: 100
+    griffin_lim_momentum: 0.99
+  vocoder:
+    _target_: msanii.models.Vocoder
+    n_fft: 2048
+    n_mels: 128
+    d_model: 256
+    d_hidden_factor: 4
+  lit_vocoder:
+    _target_: msanii.lit_models.LitVocoder
+    sample_rate: 44100
+    transforms_decay: 0.999
+    lr: 0.0002
+    betas:
+      - 0.5
+      - 0.999
+    lr_scheduler_start_factor: 0.3333333333333333
+    lr_scheduler_iters: 500
+    sample_every_n_epochs: 20
+    num_samples: 4
+  wandb_logger:
+    _target_: lightning.pytorch.loggers.WandbLogger
+    save_dir: logs
+    project: msanii
+    name: null
+    job_type: train
+    log_model: true
+    tags: null
+    notes: null
+    save_code: true
+    offline: false
+    _kwargs_: {}
+  model_checkpoint:
+    _target_: lightning.pytorch.callbacks.ModelCheckpoint
+    dirpath: null
+    save_last: true
+    verbose: false
+    mode: min
+    _kwargs_: {}
+  trainer:
+    _target_: lightning.Trainer
+    accelerator: auto
+    accumulate_grad_batches: 1
+    devices: null
+    default_root_dir: null
+    detect_anomaly: false
+    gradient_clip_val: 1.0
+    gradient_clip_algorithm: norm
+    limit_train_batches: 1.0
+    log_every_n_steps: 10
+    precision: 16
+    max_epochs: 201
+    max_steps: -1
+    weights_save_path: null
+    fast_dev_run: false
+    _kwargs_: {}
+  skip_training: false
+  resume_ckpt_path: null
+diffusion:
+  datamodule:
+    _target_: msanii.data.AudioDataModule
+    data_dir: audio_data_dir
+    sample_rate: 44100
+    num_frames: 8387584
+    load_random_slice: true
+    normalize_amplitude: false
+    batch_size: 4
+    num_workers: 8
+    pin_memory: true
+  unet:
+    _target_: msanii.models.UNet
+    d_freq: 128
+    d_base: 256
+    d_hidden_factor: 4
+    d_multipliers:
+      - 1
+      - 1
+      - 1
+      - 1
+      - 1
+      - 1
+      - 1
+    d_timestep: 128
+    dilations:
+      - 1
+      - 1
+      - 1
+      - 1
+      - 1
+      - 1
+      - 1
+    n_heads: 8
+    has_attention:
+      - false
+      - false
+      - false
+      - false
+      - false
+      - true
+      - true
+    has_resampling:
+      - true
+      - true
+      - true
+      - true
+      - true
+      - true
+      - false
+    n_block_layers:
+      - 2
+      - 2
+      - 2
+      - 2
+      - 2
+      - 2
+      - 2
+  scheduler:
+    _target_: diffusers.DDIMScheduler
+    num_train_timesteps: 1000
+    beta_schedule: squaredcos_cap_v2
+    _kwargs_: {}
+  lit_diffusion:
+    _target_: msanii.lit_models.LitDiffusion
+    sample_rate: 44100
+    transforms_decay: 0.999
+    ema_decay: 0.995
+    ema_start_step: 2000
+    ema_update_every: 10
+    lr: 0.0002
+    betas:
+      - 0.5
+      - 0.999
+    lr_scheduler_start_factor: 0.3333333333333333
+    lr_scheduler_iters: 500
+    sample_every_n_epochs: 20
+    num_samples: 4
+    num_inference_steps: 20
+  wandb_logger:
+    _target_: lightning.pytorch.loggers.WandbLogger
+    save_dir: logs
+    project: msanii
+    name: null
+    job_type: train
+    log_model: true
+    tags: null
+    notes: null
+    save_code: true
+    offline: false
+    _kwargs_: {}
+  model_checkpoint:
+    _target_: lightning.pytorch.callbacks.ModelCheckpoint
+    dirpath: null
+    save_last: true
+    verbose: false
+    mode: min
+    _kwargs_: {}
+  trainer:
+    _target_: lightning.Trainer
+    accelerator: auto
+    accumulate_grad_batches: 1
+    devices: null
+    default_root_dir: null
+    detect_anomaly: false
+    gradient_clip_val: 1.0
+    gradient_clip_algorithm: norm
+    limit_train_batches: 1.0
+    log_every_n_steps: 10
+    precision: 16
+    max_epochs: 501
+    max_steps: -1
+    weights_save_path: null
+    fast_dev_run: false
+    _kwargs_: {}
+  skip_training: false
+  resume_ckpt_path: null
+seed: 0
+pipeline_wandb_name: msanii_pipeline
+pipeline_ckpt_path: checkpoints/msanii.pt
