@@ -28,19 +28,27 @@ class DiffusionModule(nn.Module):
     def compute_timesteps(
         self, num_inference_steps: int, strength: float, device: torch.device
     ) -> Tuple[Tensor, int]:
-        # Ensure number of inference steps is not more than start timestep
-        t_start = int(strength * self.scheduler.num_train_timesteps) - 1
-        num_inference_steps = min(num_inference_steps, t_start + 1)
+        if strength > 1.0 or strength <= 0.0:
+            raise ValueError(f"`strength`: {strength} must be between 0 and 1")
 
-        # Compute inference steps for the whole noising schedule
-        total_inference_steps = int(
-            (self.scheduler.num_train_timesteps * num_inference_steps) / (t_start + 1)
+        # Ensure number of inference steps is not more than the start step
+        num_inference_steps = min(
+            num_inference_steps, round(strength * self.scheduler.num_train_timesteps)
         )
+
+        # Compute the total number of inference steps for the whole sampling schedule
+        total_inference_steps = round(num_inference_steps / strength)
+        total_inference_steps = min(
+            total_inference_steps, self.scheduler.num_train_timesteps
+        )
+
+        # Compute the step ratio using the total inference steps
+        step_ratio = self.scheduler.num_train_timesteps // total_inference_steps
+
+        # Generate timesteps
         timesteps = (
-            torch.linspace(
-                start=0, end=t_start, steps=num_inference_steps, device=device
-            )
-            .int()
+            (torch.arange(start=0, end=num_inference_steps, device=device) * step_ratio)
+            .round()
             .flipud()
         )
 
@@ -55,7 +63,7 @@ class Sampler(DiffusionModule):
         strength: float = 1.0,
         generator: Optional[torch.Generator] = None,
         verbose: bool = False,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> Tensor:
         # Set number of timesteps for denoising
         timesteps, total_inference_steps = self.compute_timesteps(
@@ -100,7 +108,7 @@ class Interpolater(DiffusionModule):
         strength: float = 1.0,
         generator: Optional[torch.Generator] = None,
         verbose: bool = False,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> Tensor:
         # Get timestep schedule for the denoising process
         timesteps, _ = self.compute_timesteps(num_inference_steps, strength, x1.device)
@@ -139,7 +147,7 @@ class Inpainter(DiffusionModule):
         jump_n_sample=10,
         generator: Optional[torch.Generator] = None,
         verbose: bool = False,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> Tensor:
         # Iterate over all timesteps
         if num_inference_steps is None:
@@ -196,7 +204,7 @@ class Outpainter(DiffusionModule):
         jump_n_sample=10,
         generator: Optional[torch.Generator] = None,
         verbose: bool = False,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> Tensor:
         half_length = x.shape[-1] // 2
 
@@ -217,7 +225,7 @@ class Outpainter(DiffusionModule):
                 jump_n_sample,
                 generator,
                 verbose,
-                **kwargs
+                **kwargs,
             )
             # Replace first half with generated second half
             second_half = span[..., half_length:]
