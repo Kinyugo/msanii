@@ -101,7 +101,7 @@ class LitDiffusion(LightningModule):
         return loss
 
     def configure_optimizers(self):
-        opt = optim.Adam(self.vocoder.parameters(), lr=self.lr, betas=self.betas)
+        opt = optim.Adam(self.unet.parameters(), lr=self.lr, betas=self.betas)
         sched = optim.lr_scheduler.LinearLR(
             opt,
             start_factor=self.lr_scheduler_start_factor,
