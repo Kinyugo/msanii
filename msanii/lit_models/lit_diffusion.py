@@ -1,3 +1,4 @@
+import copy
 from typing import List, Tuple, Union
 
 import torch
@@ -58,7 +59,6 @@ class LitDiffusion(LightningModule):
         self.num_inference_steps = num_inference_steps
 
         self.loss_fn = nn.L1Loss()
-        self.sampler = Sampler(self.ema_unet, self.scheduler)
 
     def training_step(
         self, batch: Union[Tensor, List[Tensor]], batch_idx: int
@@ -130,7 +130,8 @@ class LitDiffusion(LightningModule):
 
         # Generate samples
         noise = torch.randn_like(mel_spectrograms)[:num_samples]
-        sample_mel_spectrograms = self.sampler(
+        sampler = Sampler(self.ema_unet, copy.deepcopy(self.scheduler)).to(self.device)
+        sample_mel_spectrograms = sampler(
             noise, num_inference_steps=self.num_inference_steps, verbose=True
         )
 
