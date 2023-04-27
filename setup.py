@@ -22,6 +22,7 @@ REQUIRED = [
     "matplotlib>=3.6.2",
     "omegaconf",
     "typing_extensions",
+    "tornado",
 ]
 
 # Extra packages
